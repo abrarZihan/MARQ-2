@@ -49,10 +49,10 @@ export function PBar({ paid, target }: { paid: number; target: number }) {
   return (
     <div>
       <div className="flex justify-between mb-1.5">
-        <span className="text-sm font-extrabold text-slate-900">{BDT(paid)}</span>
-        <span className="text-xs font-medium text-slate-500">/ {BDT(target)}</span>
+        <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{BDT(paid)}</span>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">/ {BDT(target)}</span>
       </div>
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
@@ -60,7 +60,7 @@ export function PBar({ paid, target }: { paid: number; target: number }) {
           className={cn("h-full rounded-full", m.bar)} 
         />
       </div>
-      <div className="text-[11px] text-slate-500 mt-1 font-medium">{pct}% {t("common.paid_pct")}</div>
+      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">{pct}% {t("common.paid_pct")}</div>
     </div>
   );
 }
@@ -68,7 +68,7 @@ export function PBar({ paid, target }: { paid: number; target: number }) {
 export function FG({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("mb-4", className)}>
-      <label className="block text-xs font-bold text-slate-500 mb-1.5">{label}</label>
+      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">{label}</label>
       {children}
     </div>
   );
@@ -76,7 +76,7 @@ export function FG({ label, children, className }: { label: string; children: Re
 
 export function ClientAvatar({ client, size = 34 }: { client: any; size?: number }) {
   const [err, setErr] = React.useState(false);
-  if (!client) return <div style={{ width: size, height: size }} className="rounded-full bg-slate-200 shrink-0" />;
+  if (!client) return <div style={{ width: size, height: size }} className="rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />;
   
   if (client.photo && !err) {
     return (
@@ -84,7 +84,7 @@ export function ClientAvatar({ client, size = 34 }: { client: any; size?: number
         src={client.photo} 
         alt="" 
         style={{ width: size, height: size }} 
-        className="rounded-full object-cover block shrink-0" 
+        className="rounded-full object-cover block shrink-0 border border-slate-200 dark:border-slate-800" 
         referrerPolicy="no-referrer"
         onError={() => setErr(true)}
       />
@@ -95,7 +95,7 @@ export function ClientAvatar({ client, size = 34 }: { client: any; size?: number
   return (
     <div 
       style={{ width: size, height: size, backgroundColor: color + "20", color, fontSize: size * 0.35 }} 
-      className="rounded-full flex items-center justify-center font-extrabold shrink-0 border border-current/10"
+      className="rounded-full flex items-center justify-center font-extrabold shrink-0 border border-current/10 dark:border-current/20"
     >
       {initials(client.name)}
     </div>
@@ -106,8 +106,8 @@ export function PassCell({ value }: { value: string }) {
   const [show, setShow] = useState(false);
   return (
     <div className="flex items-center gap-2">
-      <span className="font-mono text-sm font-bold tracking-widest">{show ? value : "••••••"}</span>
-      <button className="text-slate-400 hover:text-slate-600 transition-colors" onClick={() => setShow(s => !s)}>
+      <span className="font-mono text-sm font-bold tracking-widest text-slate-900 dark:text-slate-100">{show ? value : "••••••"}</span>
+      <button className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => setShow(s => !s)}>
         {show ? <EyeOff size={16} /> : <Eye size={16} />}
       </button>
     </div>
@@ -117,24 +117,24 @@ export function PassCell({ value }: { value: string }) {
 export function ConfirmDelete({ message, onConfirm, onClose }: { message: React.ReactNode; onConfirm: () => void; onClose: () => void }) {
   const { t } = useLanguage();
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={onClose}>
       <motion.div 
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
+        className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe border-t border-slate-200 dark:border-slate-800" 
         onClick={e => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
+        <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 sm:hidden" />
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 size={32} />
           </div>
-          <div className="text-xl font-extrabold text-slate-900 mb-2">{t("common.delete_confirm")}</div>
-          <div className="text-sm text-slate-500">{message}</div>
+          <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">{t("common.delete_confirm")}</div>
+          <div className="text-sm text-slate-500 dark:text-slate-400">{message}</div>
         </div>
         <div className="flex gap-3">
-          <button className="flex-1 bg-rose-100 text-rose-700 font-bold py-3 rounded-xl hover:bg-rose-200 transition-colors" onClick={onConfirm}>{t("common.yes_delete")}</button>
-          <button className="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors" onClick={onClose}>{t("common.cancel")}</button>
+          <button className="flex-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold py-3 rounded-xl hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors" onClick={onConfirm}>{t("common.yes_delete")}</button>
+          <button className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={onClose}>{t("common.cancel")}</button>
         </div>
       </motion.div>
     </div>
@@ -252,7 +252,7 @@ export function BottomBar({ role, page, setPage }: any) {
     { id: "profile", label: t("nav.profile"), icon: User }
   ];
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex z-[100] pb-safe no-print">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex z-[100] pb-safe no-print">
       {tabs.map(t => {
         const Icon = t.icon;
         const isActive = page === t.id;
@@ -262,9 +262,9 @@ export function BottomBar({ role, page, setPage }: any) {
             className="flex-1 flex flex-col items-center justify-center py-2 gap-1 relative"
             onClick={() => setPage(t.id)}
           >
-            <Icon size={20} className={isActive ? "text-slate-900" : "text-slate-400"} />
-            <span className={cn("text-[10px] font-bold", isActive ? "text-slate-900" : "text-slate-400")}>{t.label}</span>
-            {isActive && <motion.div layoutId="bottom-dot" className="w-1 h-1 rounded-full bg-slate-900 absolute bottom-1" />}
+            <Icon size={20} className={isActive ? "text-slate-900 dark:text-slate-100" : "text-slate-400 dark:text-slate-500"} />
+            <span className={cn("text-[10px] font-bold", isActive ? "text-slate-900 dark:text-slate-100" : "text-slate-400 dark:text-slate-500")}>{t.label}</span>
+            {isActive && <motion.div layoutId="bottom-dot" className="w-1 h-1 rounded-full bg-slate-900 dark:bg-slate-100 absolute bottom-1" />}
           </button>
         );
       })}
@@ -306,24 +306,24 @@ export function Login({ onLogin }: any) {
       </div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl"
+        className="bg-white dark:bg-slate-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border dark:border-slate-800"
       >
         <div className="w-32 h-32 flex items-center justify-center overflow-hidden mx-auto mb-2">
           <img src={LOGO_URL} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
         </div>
         <div className="text-center mb-6">
-          <div className="text-2xl font-extrabold text-slate-900">{t("login.welcome")}</div>
-          <div className="text-sm text-slate-500 mt-1">{t("login.enter_account")}</div>
+          <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{t("login.welcome")}</div>
+          <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t("login.enter_account")}</div>
         </div>
         
-        <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6">
           {[["admin", t("login.admin")], ["client", t("login.client")]].map(([v, l]) => (
             <button 
               key={v} 
               onClick={() => { setRole(v); setErr(""); }}
               className={cn(
                 "flex-1 py-2.5 rounded-lg text-sm font-bold transition-all",
-                role === v ? "bg-slate-900 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                role === v ? "bg-slate-900 dark:bg-slate-700 text-white dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               )}
             >
               {l}
@@ -333,7 +333,7 @@ export function Login({ onLogin }: any) {
 
         <FG label={role === "admin" ? t("login.username") : t("login.customer_id")}>
           <input 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all" 
             placeholder={role === "admin" ? "admin" : "C001"} 
             value={id} onChange={e => setId(e.target.value)} 
           />
@@ -341,7 +341,7 @@ export function Login({ onLogin }: any) {
         <FG label={t("login.password")}>
           <div className="relative">
             <input 
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all pr-12" 
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all pr-12" 
               type={show ? "text" : "password"} 
               placeholder="••••••••" 
               value={pass} onChange={e => setPass(e.target.value)} 
@@ -349,7 +349,7 @@ export function Login({ onLogin }: any) {
             />
             <button 
               onClick={() => setShow(s => !s)} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1"
             >
               {show ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -359,22 +359,22 @@ export function Login({ onLogin }: any) {
         <AnimatePresence>
           {err && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-              <div className="text-rose-600 text-sm font-bold mb-4 bg-rose-50 p-3 rounded-xl border border-rose-100">{err}</div>
+              <div className="text-rose-600 dark:text-rose-400 text-sm font-bold mb-4 bg-rose-50 dark:bg-rose-900/30 p-3 rounded-xl border border-rose-100 dark:border-rose-800">{err}</div>
             </motion.div>
           )}
         </AnimatePresence>
 
         <button 
           disabled={loading}
-          className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors mb-6 disabled:opacity-50" 
+          className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors mb-6 disabled:opacity-50" 
           onClick={attempt}
         >
           {loading ? t("login.loading") : t("login.enter")}
         </button>
 
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs text-slate-500">
-          <div className="font-bold text-slate-400 text-[10px] mb-2 uppercase tracking-wider">{t("login.warning")}</div>
-          <div className="text-slate-500 leading-relaxed">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400">
+          <div className="font-bold text-slate-400 dark:text-slate-500 text-[10px] mb-2 uppercase tracking-wider">{t("login.warning")}</div>
+          <div className="text-slate-500 dark:text-slate-400 leading-relaxed">
             {t("login.warning_text")}
           </div>
         </div>
@@ -400,31 +400,31 @@ export function ForceChangePw({ admin, onDone }: any) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl"
+        className="bg-white dark:bg-slate-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border dark:border-slate-800"
       >
-        <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <KeyRound size={28} />
         </div>
         <div className="text-center mb-8">
-          <div className="text-xl font-extrabold text-slate-900">{t("login.welcome")}, {admin.name}!</div>
-          <div className="text-sm text-slate-500 mt-2">{t("pw.temp_msg")}</div>
+          <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100">{t("login.welcome")}, {admin.name}!</div>
+          <div className="text-sm text-slate-500 dark:text-slate-400 mt-2">{t("pw.temp_msg")}</div>
         </div>
         
         <FG label={t("pw.new_pw")}>
           <div className="relative">
             <input 
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all pr-12" 
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all pr-12" 
               type={showN ? "text" : "password"} 
               value={newPw} onChange={e => { setNewPw(e.target.value); setErr(""); }} 
             />
-            <button onClick={() => setShowN(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
+            <button onClick={() => setShowN(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1">
               {showN ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </FG>
         <FG label={t("pw.confirm")}>
           <input 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all" 
             type="password" 
             value={conf} onChange={e => { setConf(e.target.value); setErr(""); }} 
           />
@@ -433,15 +433,15 @@ export function ForceChangePw({ admin, onDone }: any) {
         <AnimatePresence>
           {err && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-              <div className="text-rose-600 text-sm font-bold mb-4 bg-rose-50 p-3 rounded-xl border border-rose-100">{err}</div>
+              <div className="text-rose-600 dark:text-rose-400 text-sm font-bold mb-4 bg-rose-50 dark:bg-rose-900/30 p-3 rounded-xl border border-rose-100 dark:border-rose-800">{err}</div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <button className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors mb-3" onClick={save}>
+        <button className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors mb-3" onClick={save}>
           {t("pw.set_new")}
         </button>
-        <button className="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors" onClick={() => onDone(admin.password, false)}>
+        <button className="w-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={() => onDone(admin.password, false)}>
           {t("pw.skip")}
         </button>
       </motion.div>

@@ -6,7 +6,7 @@ import { STATUS, EXP_CATS } from "../lib/data";
 import { LogRow } from "./Admin";
 import { ClientInfoPage } from "./ClientInfo";
 import { CellPaySheet, AddDefSheet, AddExpSheet, ReceiptSheet } from "./ProjectModals";
-import { Trash2, Clock, CheckCircle2, Building2, Table, Users, CreditCard, ClipboardList, ArrowLeft, Plus, Printer, FileText, Edit2, Search, Filter } from "lucide-react";
+import { Trash2, Clock, CheckCircle2, Building2, Table, Users, CreditCard, ClipboardList, ArrowLeft, Plus, Printer, FileText, Edit2, Search, Filter, X } from "lucide-react";
 
 import { useLanguage } from "../lib/i18n";
 
@@ -18,6 +18,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
   const [newPlanName, setNewPlanName] = useState("");
   const [search, setSearch] = useState("");
   const [editPlanModal, setEditPlanModal] = useState<any>(null);
+  const [delPlan, setDelPlan] = useState<any>(null);
   const [editPlanName, setEditPlanName] = useState("");
   const [longPressTimer, setLongPressTimer] = useState<any>(null);
   const [cellModal, setCellModal] = useState<any>(null);
@@ -99,44 +100,44 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-24">
       <div className="flex items-center gap-4 mb-6">
         <button 
-          className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors shadow-sm shrink-0" 
+          className="w-10 h-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm shrink-0" 
           onClick={onBack}
         >
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <div className="text-xl font-black text-slate-900 truncate">{project.name}</div>
-          <div className="text-xs font-bold text-slate-500">{t("project_detail.stats", { clients: prjClients.length, insts: prjDefs.length })}</div>
+          <div className="text-xl font-black text-slate-900 dark:text-slate-100 truncate">{project.name}</div>
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400">{t("project_detail.stats", { clients: prjClients.length, insts: prjDefs.length })}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-3 flex flex-col justify-center items-center text-center">
-          <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mb-2"><CheckCircle2 size={16} /></div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.collected")}</div>
-          <div className="text-sm font-black text-slate-900">{BDTshort(totalCollected)}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 flex flex-col justify-center items-center text-center">
+          <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center mb-2"><CheckCircle2 size={16} /></div>
+          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.collected")}</div>
+          <div className="text-sm font-black text-slate-900 dark:text-slate-100">{BDTshort(totalCollected)}</div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-3 flex flex-col justify-center items-center text-center">
-          <div className="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center mb-2"><Clock size={16} /></div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.due")}</div>
-          <div className="text-sm font-black text-slate-900">{BDTshort(totalDue)}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 flex flex-col justify-center items-center text-center">
+          <div className="w-8 h-8 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg flex items-center justify-center mb-2"><Clock size={16} /></div>
+          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.due")}</div>
+          <div className="text-sm font-black text-slate-900 dark:text-slate-100">{BDTshort(totalDue)}</div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-3 flex flex-col justify-center items-center text-center">
-          <div className="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center mb-2"><Building2 size={16} /></div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.expense")}</div>
-          <div className="text-sm font-black text-slate-900">{BDTshort(prjExpenses.reduce((s: number, e: any) => s + e.amount, 0))}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 flex flex-col justify-center items-center text-center">
+          <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-lg flex items-center justify-center mb-2"><Building2 size={16} /></div>
+          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-0.5">{t("project_detail.expense")}</div>
+          <div className="text-sm font-black text-slate-900 dark:text-slate-100">{BDTshort(prjExpenses.reduce((s: number, e: any) => s + e.amount, 0))}</div>
         </div>
       </div>
 
-      <div className="flex bg-slate-200/50 p-1 rounded-xl mb-6 overflow-x-auto scrollbar-hide">
+      <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl mb-6 overflow-x-auto scrollbar-hide">
         {TABS.map(([v, l]) => (
           <button 
-            key={v} 
+            key={v as string} 
             className={cn(
               "flex-1 py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap", 
-              tab === v ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              tab === v ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
             )} 
-            onClick={() => setTab(v)}
+            onClick={() => setTab(v as string)}
           >
             {l}
           </button>
@@ -160,17 +161,17 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                     className={cn(
                       "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border",
                       activePlanId === pl.id 
-                        ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-200" 
-                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                        ? "bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-md shadow-slate-200 dark:shadow-none" 
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                     )}
                   >
                     {pl.name}
                   </button>
                 ))}
               </div>
-              <div className="w-px h-6 bg-slate-200 shrink-0 hidden sm:block" />
+              <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 shrink-0 hidden sm:block" />
               <button 
-                className="w-9 h-9 bg-white text-slate-600 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0 border border-slate-200 shadow-sm"
+                className="w-9 h-9 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shrink-0 border border-slate-200 dark:border-slate-800 shadow-sm"
                 onClick={() => setShowAddPlan(true)}
                 title="Add New Plan"
               >
@@ -180,7 +181,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
 
             <div className="flex items-center gap-2 shrink-0">
               <button 
-                className="flex-1 sm:flex-none bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm flex items-center justify-center gap-2" 
+                className="flex-1 sm:flex-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm flex items-center justify-center gap-2" 
                 onClick={() => window.print()}
               >
                 <Printer size={14} /> {t("project_detail.print_sheet")}
@@ -199,19 +200,19 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
               <div className="fixed inset-0 bg-slate-900/60 z-[500] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowAddPlan(false)}>
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                  className="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-slate-200"
+                  className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-slate-200 dark:border-slate-800"
                   onClick={e => e.stopPropagation()}
                 >
-                  <div className="w-16 h-16 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                     <Table size={32} />
                   </div>
-                  <h3 className="text-xl font-black text-slate-900 mb-2 text-center">New Installment Plan</h3>
-                  <p className="text-sm text-slate-500 font-medium mb-6 text-center">Create a new structure for installments for this project.</p>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 text-center">New Installment Plan</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-6 text-center">Create a new structure for installments for this project.</p>
                   
                   <FG label="Plan Name">
                     <input 
                       autoFocus
-                      className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all font-bold"
+                      className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all font-bold text-slate-900 dark:text-slate-100"
                       placeholder="e.g. Revised Plan 2024"
                       value={newPlanName}
                       onChange={e => setNewPlanName(e.target.value)}
@@ -229,13 +230,13 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                   
                   <div className="flex gap-3 mt-8">
                     <button 
-                      className="flex-1 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-2xl hover:bg-slate-200 transition-colors"
+                      className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold py-3.5 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                       onClick={() => setShowAddPlan(false)}
                     >
                       Cancel
                     </button>
                     <button 
-                      className="flex-1 bg-slate-900 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200 disabled:opacity-50"
+                      className="flex-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-lg shadow-slate-200 dark:shadow-none disabled:opacity-50"
                       disabled={!newPlanName.trim()}
                       onClick={() => {
                         if (newPlanName.trim()) {
@@ -255,32 +256,40 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
             )}
           </AnimatePresence>
           
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 no-print">
+            <div className="relative flex-1 group max-w-md">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 dark:group-focus-within:text-slate-300 transition-colors" />
+              <input 
+                className="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100 shadow-sm" 
+                placeholder={t("client_info.search_ph")} 
+                value={search} onChange={e => setSearch(e.target.value)} 
+              />
+              {search && (
+                <button 
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          </div>
+
           {prjClients.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 text-slate-400 font-bold text-sm">
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm">
               {t("project_detail.add_client_prompt")}
             </div>
           ) : prjDefs.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 text-slate-400 font-bold text-sm">
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm">
               {t("project_detail.add_inst_prompt")}
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] rounded-2xl border border-slate-200 bg-white shadow-sm scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
               <table className="w-full text-xs border-separate border-spacing-0">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 top-0 z-30 bg-slate-900 text-white text-left p-3 min-w-[140px] font-bold border-r border-b border-white/10 shadow-[4px_0_8px_rgba(0,0,0,0.15)]">
+                    <th className="sticky left-0 top-0 z-30 bg-slate-900 dark:bg-slate-950 text-white text-left p-3 min-w-[140px] font-bold border-r border-b border-white/10 dark:border-white/5 shadow-[4px_0_8px_rgba(0,0,0,0.15)]">
                       {t("project_detail.client_col")}
-                      <div className="relative mt-2 flex items-center">
-                        <Search size={12} className="absolute left-2 text-white/50" />
-                        <input 
-                          className="w-full pl-7 pr-7 py-1 bg-white/10 border border-white/20 rounded-lg text-[10px] focus:outline-none focus:border-white/40 placeholder:text-white/40"
-                          placeholder={t("client_info.search_ph")}
-                          value={search}
-                          onChange={e => setSearch(e.target.value)}
-                          onClick={e => e.stopPropagation()}
-                        />
-                        <Filter size={12} className="absolute right-2 text-white/50 cursor-pointer hover:text-white" />
-                      </div>
                     </th>
                     {prjDefs.map((d: any) => {
                       const taps = defTaps[d.id] || 0;
@@ -289,7 +298,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                       const tapLabel = taps === 0 ? t("project_detail.delete") : taps === 1 ? t("project_detail.confirm_2_3") : t("project_detail.delete_3_3");
                       
                       return (
-                        <th key={d.id} className="sticky top-0 z-10 bg-slate-900 text-white p-3 min-w-[120px] font-bold border-r border-b border-white/10 text-center">
+                        <th key={d.id} className="sticky top-0 z-10 bg-slate-900 dark:bg-slate-950 text-white p-3 min-w-[120px] font-bold border-r border-b border-white/10 dark:border-white/5 text-center">
                           <div className="text-[11px] mb-1">{d.title}</div>
                           <div className="text-[9px] text-slate-400 font-medium">{BDT(d.targetAmount)}</div>
                           {d.dueDate && <div className="text-[8px] text-slate-500 mt-0.5">{d.dueDate}</div>}
@@ -313,7 +322,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                         </th>
                       );
                     })}
-                    <th className="sticky top-0 z-10 bg-slate-900 text-white p-3 min-w-[100px] font-bold text-center border-b border-white/10">{t("project_detail.total_col")}</th>
+                    <th className="sticky top-0 z-10 bg-slate-900 dark:bg-slate-950 text-white p-3 min-w-[100px] font-bold text-center border-b border-white/10 dark:border-white/5">{t("project_detail.total_col")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -324,13 +333,13 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                     const rowTarget = prjDefs.reduce((s: number, d: any) => s + d.targetAmount, 0) * shareCount;
                     
                     return (
-                      <tr key={client.id} className="group hover:bg-slate-50 transition-colors">
-                        <td className="sticky left-0 z-20 bg-white group-hover:bg-slate-50 border-r border-b border-slate-100 p-3 transition-colors shadow-[4px_0_8_rgba(0,0,0,0.03)]">
+                      <tr key={client.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="sticky left-0 z-20 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-b border-slate-100 dark:border-slate-800 p-3 transition-colors shadow-[4px_0_8_rgba(0,0,0,0.03)]">
                           <div className="flex items-center gap-3">
                             <ClientAvatar client={client} size={32} />
                             <div>
-                              <div className="text-xs font-bold text-slate-900">{client.name}</div>
-                              <div className="text-[10px] text-slate-500 font-medium">{client.plot} {shareCount > 1 && <span className="text-blue-600">({shareCount} {t("client_info.shares")})</span>}</div>
+                              <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{client.name}</div>
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{client.plot} {shareCount > 1 && <span className="text-blue-600 dark:text-blue-400">({shareCount} {t("client_info.shares")})</span>}</div>
                             </div>
                           </div>
                         </td>
@@ -343,7 +352,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                           const m = STATUS[st];
                           
                           return (
-                            <td key={d.id} className="p-2 border-r border-b border-slate-100 text-center align-middle">
+                            <td key={d.id} className="p-2 border-r border-b border-slate-100 dark:border-slate-800 text-center align-middle">
                               <button 
                                 className={cn("w-full rounded-xl p-2 cursor-pointer transition-transform active:scale-95", m.bg)} 
                                 onClick={() => setCellModal({ client, instDef: d })}
@@ -351,12 +360,12 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                                 <span className={cn("block text-xs font-black whitespace-nowrap", m.text)}>
                                   {paid > 0 ? BDTshort(paid) : "—"}
                                 </span>
-                                <span className="block text-[9px] text-slate-400 font-medium mt-0.5">
+                                <span className="block text-[9px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
                                   {BDTshort(cellTarget)}
                                 </span>
-                                {pendingAmt > 0 && <span className="block text-[9px] text-amber-600 font-bold mt-1 flex items-center justify-center gap-0.5"><Clock size={10} /> {BDTshort(pendingAmt)}</span>}
+                                {pendingAmt > 0 && <span className="block text-[9px] text-amber-600 dark:text-amber-400 font-bold mt-1 flex items-center justify-center gap-0.5"><Clock size={10} /> {BDTshort(pendingAmt)}</span>}
                                 {paid > 0 && (
-                                  <div className="h-1 bg-white/50 rounded-full mt-1.5 overflow-hidden">
+                                  <div className="h-1 bg-white/50 dark:bg-black/20 rounded-full mt-1.5 overflow-hidden">
                                     <div className={cn("h-full rounded-full", m.bar)} style={{ width: `${pct}%` }} />
                                   </div>
                                 )}
@@ -364,17 +373,17 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                             </td>
                           );
                         })}
-                        <td className="p-3 text-center align-middle border-b border-slate-100">
-                          <div className={cn("text-xs font-black", rowTotal >= rowTarget ? "text-emerald-600" : rowTotal > 0 ? "text-amber-600" : "text-slate-400")}>
+                        <td className="p-3 text-center align-middle border-b border-slate-100 dark:border-slate-800">
+                          <div className={cn("text-xs font-black", rowTotal >= rowTarget ? "text-emerald-600 dark:text-emerald-400" : rowTotal > 0 ? "text-amber-600 dark:text-amber-400" : "text-slate-400 dark:text-slate-500")}>
                             {BDTshort(rowTotal)}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-medium mt-0.5">{BDTshort(rowTarget)}</div>
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">{BDTshort(rowTarget)}</div>
                         </td>
                       </tr>
                     );
                   })}
-                  <tr className="bg-slate-50 font-bold">
-                    <td className="sticky left-0 z-20 bg-slate-50 border-r border-slate-200 p-3 text-slate-900 text-xs shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{t("project_detail.total_col")}</td>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold">
+                    <td className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-3 text-slate-900 dark:text-slate-100 text-xs shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{t("project_detail.total_col")}</td>
                     {prjDefs.map((d: any) => {
                       const ct = prjClients.reduce((s: number, c: any) => s + clientPaidForDef(c.id, d.id, payments), 0);
                       const cT = prjClients.reduce((s: number, c: any) => {
@@ -383,9 +392,9 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                         return s + sc * d.targetAmount;
                       }, 0);
                       return (
-                        <td key={d.id} className="p-3 border-r border-slate-100 text-center align-middle">
-                          <div className="text-xs font-black text-slate-900">{BDTshort(ct)}</div>
-                          <div className="text-[10px] text-slate-500 font-medium mt-0.5">{cT > 0 ? Math.round((ct / cT) * 100) : 0}%</div>
+                        <td key={d.id} className="p-3 border-r border-slate-100 dark:border-slate-800 text-center align-middle">
+                          <div className="text-xs font-black text-slate-900 dark:text-slate-100">{BDTshort(ct)}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{cT > 0 ? Math.round((ct / cT) * 100) : 0}%</div>
                         </td>
                       );
                     })}
@@ -411,7 +420,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
       {tab === "kistisum" && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-3">
           {prjClients.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 text-slate-400 font-bold text-sm">
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm">
               {t("project_detail.no_clients")}
             </div>
           )}
@@ -421,17 +430,17 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
             const cPaid = payments.filter((p: any) => p.clientId === c.id && p.status === "approved" && prjDefs.find(d => d.id === p.instDefId)).reduce((s: number, p: any) => s + p.amount, 0);
             const cTarget = prjDefs.reduce((s: number, d: any) => s + d.targetAmount, 0) * shareCount;
             return (
-              <div key={c.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+              <div key={c.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
                 <div className="flex items-center gap-4 mb-4">
                   <ClientAvatar client={c} size={48} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-black text-slate-900">{c.name}</div>
-                    <div className="text-xs text-slate-500 font-medium mt-1">
+                    <div className="text-base font-black text-slate-900 dark:text-slate-100">{c.name}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
                       {c.phone}
                       {c.plot && (
                         <>
                           {" · "}
-                          <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">
+                          <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-bold">
                             {c.plot}
                           </span>
                         </>
@@ -439,7 +448,7 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
                       {shareCount > 1 && (
                         <>
                           {" · "}
-                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">
+                          <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded font-bold">
                             {shareCount} {t("client_info.shares")}
                           </span>
                         </>
@@ -456,13 +465,13 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
 
       {tab === "payments" && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 flex items-center gap-5 mb-6 shadow-sm">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-5 mb-6 shadow-sm">
+            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shrink-0">
               <CreditCard size={32} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 truncate">{t("project_detail.total_collected")}</div>
-              <div className="text-3xl font-black text-slate-900 tracking-tight">{BDT(totalCollected)}</div>
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 truncate">{t("project_detail.total_collected")}</div>
+              <div className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{BDT(totalCollected)}</div>
             </div>
           </div>
 
@@ -474,20 +483,20 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
               const client = prjClients.find((c: any) => c.id === p.clientId);
               const def = prjDefs.find((d: any) => d.id === p.instDefId);
               return (
-                <div key={`${p.id}-${i}`} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", p.status === "approved" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600")}>
+                <div key={`${p.id}-${i}`} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center gap-4">
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", p.status === "approved" ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400")}>
                     {p.status === "approved" ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold text-slate-900 truncate">{client?.name}</div>
-                    <div className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">{def?.title} · {p.date}</div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{client?.name}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">{def?.title} · {p.date}</div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <div className="text-sm font-black text-slate-900">{BDT(p.amount)}</div>
+                    <div className="text-sm font-black text-slate-900 dark:text-slate-100">{BDT(p.amount)}</div>
                     {p.status === "approved" && (
                       <button 
                         onClick={() => setViewR({ payment: p, client, instDef: def })}
-                        className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
                       >
                         <FileText size={12} /> {t("modal.receipt")}
                       </button>
@@ -502,20 +511,20 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
 
       {tab === "expenses" && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center gap-5 mb-6 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col sm:flex-row sm:items-center gap-5 mb-6 shadow-sm">
             <div className="flex items-center gap-5 flex-1 min-w-0">
-              <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shrink-0">
+              <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center shrink-0">
                 <CategoryIcon category="মোট ব্যয়" size={32} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t("project_detail.total_expense")}</div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight break-words">
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("project_detail.total_expense")}</div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight break-words">
                   {BDT(prjExpenses.reduce((s: number, e: any) => s + e.amount, 0))}
                 </div>
               </div>
             </div>
             <button 
-              className="w-full sm:w-auto bg-slate-900 text-white px-5 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors shadow-sm flex items-center justify-center gap-2 shrink-0" 
+              className="w-full sm:w-auto bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm flex items-center justify-center gap-2 shrink-0" 
               onClick={() => setAddExpModal(true)}
             >
               <Plus size={18} /> {t("project_detail.new_expense")}
@@ -523,35 +532,35 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
           </div>
           
           {prjExpenses.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 text-slate-400 font-bold text-sm">
+            <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm">
               {t("project_detail.no_expenses")}
             </div>
           ) : (
             <div className="space-y-3">
               {[...prjExpenses].sort((a, b) => b.date.localeCompare(a.date)).map((e: any, i: number) => {
                 return (
-                  <div key={`${e.id}-${i}`} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">
+                  <div key={`${e.id}-${i}`} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center gap-4">
                     <div 
                       className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", CategoryColor(e.category))}
                     >
                       <CategoryIcon category={e.category} size={24} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-900">{e.category}</div>
-                      <div className="text-xs text-slate-500 font-medium mt-0.5 truncate">{e.description}</div>
-                      <div className="text-[10px] text-slate-400 mt-1">{e.date}</div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{e.category}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">{e.description}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{e.date}</div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
-                      <div className="text-base font-black text-slate-900">{BDT(e.amount)}</div>
+                      <div className="text-base font-black text-slate-900 dark:text-slate-100">{BDT(e.amount)}</div>
                       <div className="flex gap-2">
                         <button 
-                          className="w-8 h-8 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors" 
+                          className="w-8 h-8 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" 
                           onClick={() => setEditExpModal(e)}
                         >
                           <Edit2 size={16} />
                         </button>
                         <button 
-                          className="w-8 h-8 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center hover:bg-rose-100 transition-colors" 
+                          className="w-8 h-8 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg flex items-center justify-center hover:bg-rose-100 dark:hover:bg-rose-800 transition-colors" 
                           onClick={() => setDelExp(e)}
                         >
                           <Trash2 size={16} />
@@ -567,9 +576,9 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
       )}
 
       {tab === "log" && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-2">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2">
           {prjLogs.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 font-medium">{t("project_detail.no_activity")}</div>
+            <div className="text-center py-10 text-slate-400 dark:text-slate-500 font-medium">{t("project_detail.no_activity")}</div>
           ) : (
             prjLogs.map((l, i) => <LogRow key={`${l.id}-${i}`} log={l} projects={[project]} />)
           )}
@@ -588,19 +597,19 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
           <div className="fixed inset-0 bg-slate-900/60 z-[500] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setEditPlanModal(null)}>
             <motion.div 
               initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-slate-200"
+              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-slate-200 dark:border-slate-800"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <Edit2 size={32} />
               </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 text-center">Edit Plan Name</h3>
-              <p className="text-sm text-slate-500 font-medium mb-6 text-center">Change the name of this installment plan.</p>
+              <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 text-center">Edit Plan Name</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-6 text-center">Change the name of this installment plan.</p>
               
               <FG label="Plan Name">
                 <input 
                   autoFocus
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all font-bold"
+                  className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all font-bold text-slate-900 dark:text-slate-100"
                   value={editPlanName}
                   onChange={e => setEditPlanName(e.target.value)}
                   onKeyDown={e => {
@@ -614,13 +623,13 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
               
               <div className="flex gap-3 mt-8">
                 <button 
-                  className="flex-1 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-2xl hover:bg-slate-200 transition-colors"
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold py-3.5 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   onClick={() => setEditPlanModal(null)}
                 >
                   Cancel
                 </button>
                 <button 
-                  className="flex-1 bg-slate-900 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200 disabled:opacity-50"
+                  className="flex-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-lg shadow-slate-200 dark:shadow-none disabled:opacity-50"
                   disabled={!editPlanName.trim()}
                   onClick={() => {
                     if (editPlanName.trim()) {
@@ -635,12 +644,10 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
               
               {isSuperAdmin && (
                 <button 
-                  className="w-full mt-6 text-rose-600 font-bold text-xs hover:underline flex items-center justify-center gap-1"
+                  className="w-full mt-6 text-rose-600 dark:text-rose-400 font-bold text-xs hover:underline flex items-center justify-center gap-1"
                   onClick={() => {
-                    if (confirm(`Are you sure you want to delete "${editPlanModal.name}"? This will delete all installment definitions in this plan.`)) {
-                      onDeletePlan(editPlanModal.id);
-                      setEditPlanModal(null);
-                    }
+                    setDelPlan(editPlanModal);
+                    setEditPlanModal(null);
                   }}
                 >
                   <Trash2 size={12} /> Delete Plan
@@ -648,6 +655,16 @@ export function ProjectDetail({ project, clients, allClients, instDefs, plans, p
               )}
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {delPlan && (
+          <ConfirmDelete 
+            message={<><b>{delPlan.name}</b> {t("admin_home.delete_warning")}</>} 
+            onConfirm={() => { onDeletePlan(delPlan.id); setDelPlan(null); }} 
+            onClose={() => setDelPlan(null)} 
+          />
         )}
       </AnimatePresence>
     </motion.div>

@@ -37,15 +37,15 @@ function PendingApprovals({ payments, clients, instDefs, projects, onApprove, on
   const { t } = useLanguage();
   const pending = payments.filter((p: any) => p.status === "pending");
   if (pending.length === 0) return (
-    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
-      <CheckCircle2 size={24} className="text-emerald-600" />
-      <span className="text-sm font-bold text-emerald-700">{t("dashboard.no_pending")}</span>
+    <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl p-4 mb-4 flex items-center gap-3">
+      <CheckCircle2 size={24} className="text-emerald-600 dark:text-emerald-400" />
+      <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{t("dashboard.no_pending")}</span>
     </div>
   );
   return (
     <div className="mb-6">
-      <div className="text-sm font-extrabold text-rose-600 mb-3 flex items-center gap-2">
-        <span className="bg-rose-100 text-rose-600 rounded-full px-2.5 py-0.5 text-xs">{pending.length}</span>
+      <div className="text-sm font-extrabold text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
+        <span className="bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full px-2.5 py-0.5 text-xs">{pending.length}</span>
         {t("dashboard.pending_approval")}
       </div>
       {pending.map((p: any) => {
@@ -56,19 +56,19 @@ function PendingApprovals({ payments, clients, instDefs, projects, onApprove, on
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             key={p.id} 
-            className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-3"
+            className="bg-amber-50 dark:bg-amber-900/10 border-2 border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 mb-3"
           >
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="text-sm font-extrabold text-slate-900">{client?.name || p.clientId}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{dotJoin(prj?.name, def?.title)}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{dotJoin(p.date, p.note)}</div>
+                <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{client?.name || p.clientId}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{dotJoin(prj?.name, def?.title)}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{dotJoin(p.date, p.note)}</div>
               </div>
-              <div className="text-xl font-black text-amber-700">{BDT(p.amount)}</div>
+              <div className="text-xl font-black text-amber-700 dark:text-amber-500">{BDT(p.amount)}</div>
             </div>
             <div className="flex gap-2">
-              <button className="flex-1 bg-emerald-100 text-emerald-700 font-bold py-2.5 rounded-xl hover:bg-emerald-200 transition-colors text-sm flex items-center justify-center gap-2" onClick={() => onApprove(p.id)}><CheckCircle2 size={16} /> {t("dashboard.approve")}</button>
-              <button className="flex-1 bg-rose-100 text-rose-700 font-bold py-2.5 rounded-xl hover:bg-rose-200 transition-colors text-sm flex items-center justify-center gap-2" onClick={() => onReject(p.id)}><XCircle size={16} /> {t("dashboard.reject")}</button>
+              <button className="flex-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold py-2.5 rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors text-sm flex items-center justify-center gap-2" onClick={() => onApprove(p.id)}><CheckCircle2 size={16} /> {t("dashboard.approve")}</button>
+              <button className="flex-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold py-2.5 rounded-xl hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors text-sm flex items-center justify-center gap-2" onClick={() => onReject(p.id)}><XCircle size={16} /> {t("dashboard.reject")}</button>
             </div>
           </motion.div>
         );
@@ -109,15 +109,15 @@ function FinancialSummary({ projects, clients, instDefs, payments, expenses, pla
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg flex items-center justify-center">
             <Wallet size={18} />
           </div>
-          <h1 className="text-xl font-black text-slate-900">{t("dashboard.financial_summary")}</h1>
+          <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">{t("dashboard.financial_summary")}</h1>
         </div>
-        <p className="text-xs font-medium text-slate-500">{t("dashboard.overall_analysis")}</p>
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t("dashboard.overall_analysis")}</p>
       </div>
       
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 mb-4 text-white shadow-xl">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-6 mb-4 text-white shadow-xl">
         <div className="text-xs text-slate-400 font-bold mb-1 tracking-wider">{t("dashboard.net_profit_loss")}</div>
         <div className={cn("text-4xl font-black tracking-tighter", netProfit >= 0 ? "text-emerald-400" : "text-rose-400")}>
           {netProfit >= 0 ? "+" : ""}{BDT(netProfit)}
@@ -126,48 +126,48 @@ function FinancialSummary({ projects, clients, instDefs, payments, expenses, pla
       </div>
       
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t("dashboard.total_expected")}</div>
-          <div className="text-lg font-black text-slate-900 mt-1">{BDTshort(totalExpected)}</div>
+          <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1">{BDTshort(totalExpected)}</div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t("dashboard.total_collected")}</div>
-          <div className="text-lg font-black text-emerald-600 mt-1">{BDTshort(totalCollected)}</div>
+          <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">{BDTshort(totalCollected)}</div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t("dashboard.total_due")}</div>
-          <div className="text-lg font-black text-rose-600 mt-1">{BDTshort(totalDue)}</div>
+          <div className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">{BDTshort(totalDue)}</div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t("dashboard.total_expenses")}</div>
-          <div className="text-lg font-black text-violet-600 mt-1">{BDTshort(totalExpenses)}</div>
+          <div className="text-lg font-black text-violet-600 dark:text-violet-400 mt-1">{BDTshort(totalExpenses)}</div>
         </div>
       </div>
       
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 mb-6">
         <div className="flex justify-between items-end mb-2">
-          <span className="text-sm font-bold text-slate-900">{t("dashboard.collection_progress")}</span>
-          <span className="text-lg font-black text-blue-600">{collectPct}%</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{t("dashboard.collection_progress")}</span>
+          <span className="text-lg font-black text-blue-600 dark:text-blue-400">{collectPct}%</span>
         </div>
-        <div className="h-3 bg-slate-100 rounded-full overflow-hidden mb-3">
+        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
           <motion.div 
             initial={{ width: 0 }} animate={{ width: `${collectPct}%` }} 
             transition={{ duration: 1, ease: "easeOut" }}
             className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full" 
           />
         </div>
-        <div className="flex justify-between text-xs text-slate-500 font-medium">
+        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
           <span>{t("dashboard.collected_label")} {BDT(totalCollected)}</span>
           <span>{t("dashboard.due_label")} {BDT(totalDue)}</span>
         </div>
         {totalPending > 0 && (
-          <div className="mt-4 text-xs text-amber-700 font-bold bg-amber-50 rounded-xl p-3 border border-amber-100 flex items-center gap-2">
+          <div className="mt-4 text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 border border-amber-100 dark:border-amber-900/30 flex items-center gap-2">
             <Clock size={14} /> {t("dashboard.pending_approval_label")} {BDT(totalPending)}
           </div>
         )}
       </div>
       
-      <div className="text-lg font-black text-slate-900 mb-4">{t("dashboard.project_analysis")}</div>
+      <div className="text-lg font-black text-slate-900 dark:text-slate-100 mb-4">{t("dashboard.project_analysis")}</div>
       
       {projects.map((prj: any, idx: number) => {
         const prjClients = clients.filter((c: any) => c.projectId === prj.id);
@@ -202,38 +202,38 @@ function FinancialSummary({ projects, clients, instDefs, payments, expenses, pla
         const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
         
         return (
-          <div key={prj.id} className="bg-white rounded-2xl border border-slate-200 p-5 mb-4 relative overflow-hidden">
+          <div key={prj.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 mb-4 relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: color }} />
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-base font-black text-slate-900">{prj.name}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{t("dashboard.stats", { clients: prjClients.length, insts: prjDefs.length })}</div>
+                <div className="text-base font-black text-slate-900 dark:text-slate-100">{prj.name}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t("dashboard.stats", { clients: prjClients.length, insts: prjDefs.length })}</div>
               </div>
-              <span className={cn("text-sm font-black", net >= 0 ? "text-emerald-600" : "text-rose-600")}>
+              <span className={cn("text-sm font-black", net >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                 {net >= 0 ? "+" : ""}{BDTshort(net)}
               </span>
             </div>
             
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="bg-emerald-50 rounded-xl p-2.5">
-                <div className="text-[9px] text-slate-500 font-bold uppercase">{t("dashboard.collected_short")}</div>
-                <div className="text-sm font-black text-emerald-700 mt-0.5">{BDTshort(collected)}</div>
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-2.5">
+                <div className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase">{t("dashboard.collected_short")}</div>
+                <div className="text-sm font-black text-emerald-700 dark:text-emerald-400 mt-0.5">{BDTshort(collected)}</div>
               </div>
-              <div className="bg-rose-50 rounded-xl p-2.5">
-                <div className="text-[9px] text-slate-500 font-bold uppercase">{t("dashboard.due_short")}</div>
-                <div className="text-sm font-black text-rose-700 mt-0.5">{BDTshort(due)}</div>
+              <div className="bg-rose-50 dark:bg-rose-900/20 rounded-xl p-2.5">
+                <div className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase">{t("dashboard.due_short")}</div>
+                <div className="text-sm font-black text-rose-700 dark:text-rose-400 mt-0.5">{BDTshort(due)}</div>
               </div>
-              <div className="bg-violet-50 rounded-xl p-2.5">
-                <div className="text-[9px] text-slate-500 font-bold uppercase">{t("dashboard.expense_short")}</div>
-                <div className="text-sm font-black text-violet-700 mt-0.5">{BDTshort(spent)}</div>
+              <div className="bg-violet-50 dark:bg-violet-900/20 rounded-xl p-2.5">
+                <div className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase">{t("dashboard.expense_short")}</div>
+                <div className="text-sm font-black text-violet-700 dark:text-violet-400 mt-0.5">{BDTshort(spent)}</div>
               </div>
             </div>
             
             <div className="flex justify-between items-end mb-1.5">
-              <span className="text-xs text-slate-500 font-medium">{t("dashboard.collection_progress")}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t("dashboard.collection_progress")}</span>
               <span className="text-xs font-black" style={{ color }}>{pct}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
+            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
               <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} className="h-full rounded-full" style={{ backgroundColor: color }} />
             </div>
             
@@ -241,14 +241,14 @@ function FinancialSummary({ projects, clients, instDefs, payments, expenses, pla
               <div>
                 <div className="text-[10px] text-slate-400 font-bold mb-2 uppercase tracking-wider">{t("dashboard.top_expenses")}</div>
                 {topCats.map(([cat, amt]) => (
-                  <div key={cat} className="flex justify-between items-center text-xs mb-1.5 text-slate-600">
+                  <div key={cat} className="flex justify-between items-center text-xs mb-1.5 text-slate-600 dark:text-slate-400">
                     <span className="font-medium flex items-center gap-1.5">
                       <div className={cn("w-5 h-5 rounded-md flex items-center justify-center", CategoryColor(cat))}>
                         <CategoryIcon category={cat} size={12} />
                       </div>
                       {cat}
                     </span>
-                    <span className="font-bold text-slate-900">{BDT(amt)}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{BDT(amt)}</span>
                   </div>
                 ))}
               </div>
@@ -280,26 +280,26 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-24">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">MARQ Builders</h1>
-          <p className="text-sm font-medium text-slate-500">{t("admin_home.projects_count", { count: projects.length })}</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">MARQ Builders</h1>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("admin_home.projects_count", { count: projects.length })}</p>
         </div>
         <button 
-          className="bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors shadow-sm" 
+          className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm" 
           onClick={() => setAddModal(true)}
         >
           {t("admin_home.add_project")}
         </button>
       </div>
       
-      <div className="flex bg-slate-200/50 p-1 rounded-xl mb-6">
+      <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl mb-6">
         <button 
-          className={cn("flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2", view === "projects" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700")} 
+          className={cn("flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2", view === "projects" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200")} 
           onClick={() => setView("projects")}
         >
           <Building2 size={16} /> {t("admin_home.projects_tab")}
         </button>
         <button 
-          className={cn("flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2", view === "financial" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700")} 
+          className={cn("flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2", view === "financial" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200")} 
           onClick={() => setView("financial")}
         >
           <Wallet size={16} /> {t("admin_home.financial_tab")}
@@ -313,26 +313,26 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
           {isSuperAdmin && <PendingApprovals payments={payments} clients={clients} instDefs={instDefs} projects={projects} onApprove={onApprovePayment} onReject={onRejectPayment} />}
           
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col justify-center">
-              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-center">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-3">
                 <Building2 size={20} />
               </div>
-              <div className="text-xs text-slate-500 font-bold mb-1">{t("admin_home.total_projects")}</div>
-              <div className="text-xl font-black text-slate-900">{projects.length}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">{t("admin_home.total_projects")}</div>
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100">{projects.length}</div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col justify-center">
-              <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-3">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-center">
+              <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-3">
                 <Wallet size={20} />
               </div>
-              <div className="text-xs text-slate-500 font-bold mb-1">{t("admin_home.total_collected")}</div>
-              <div className="text-xl font-black text-slate-900">{BDTshort(allCollected)}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold mb-1">{t("admin_home.total_collected")}</div>
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100">{BDTshort(allCollected)}</div>
             </div>
           </div>
           
           {pendingCount > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex justify-between items-center">
-              <span className="text-sm font-bold text-amber-700 flex items-center gap-2"><Clock size={16} /> {pendingCount}{t("admin_home.pending_payments")}</span>
-              {!isSuperAdmin && <span className="text-xs font-medium text-amber-600">{t("admin_home.super_admin_approve")}</span>}
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 mb-6 flex justify-between items-center">
+              <span className="text-sm font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2"><Clock size={16} /> {pendingCount}{t("admin_home.pending_payments")}</span>
+              {!isSuperAdmin && <span className="text-xs font-medium text-amber-600 dark:text-amber-500">{t("admin_home.super_admin_approve")}</span>}
             </div>
           )}
           
@@ -346,7 +346,7 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
                 <motion.div 
                   whileHover={{ scale: 0.98 }} whileTap={{ scale: 0.95 }}
                   key={prj.id} 
-                  className="bg-white rounded-2xl border border-slate-200 p-5 cursor-pointer shadow-sm hover:shadow-md transition-all" 
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 cursor-pointer shadow-sm hover:shadow-md transition-all" 
                   onClick={() => onSelect(prj.id)}
                 >
                   <div className="flex items-start gap-4 mb-4">
@@ -354,22 +354,22 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
                       <Building2 size={24} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-lg font-black text-slate-900 truncate">{prj.name}</div>
-                      <div className="text-xs text-slate-500 font-medium mt-1 line-clamp-2">{prj.description}</div>
+                      <div className="text-lg font-black text-slate-900 dark:text-slate-100 truncate">{prj.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 line-clamp-2">{prj.description}</div>
                     </div>
-                    <div className="text-slate-300 flex items-center justify-center w-6 h-6">
+                    <div className="text-slate-300 dark:text-slate-600 flex items-center justify-center w-6 h-6">
                       <ChevronRight size={20} />
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2">
                       <span className="px-2.5 py-1 rounded-lg text-xs font-bold" style={{ backgroundColor: color + "15", color }}>{prjClients.length} জন</span>
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700">{BDTshort(prjPaid)}</span>
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">{BDTshort(prjPaid)}</span>
                     </div>
                     
                     <div className="relative">
                       <button 
-                        className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 dark:text-slate-500"
                         onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === prj.id ? null : prj.id); }}
                       >
                         <MoreVertical size={20} />
@@ -383,11 +383,11 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
                               initial={{ opacity: 0, scale: 0.95, y: -10 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                              className="absolute right-0 bottom-full mb-2 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[110] overflow-hidden"
+                              className="absolute right-0 bottom-full mb-2 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-1.5 z-[110] overflow-hidden"
                               onClick={e => e.stopPropagation()}
                             >
                               <button 
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                 onClick={() => {
                                   setEditModal(prj);
                                   setEditName(prj.name);
@@ -398,7 +398,7 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
                                 <Edit2 size={16} className="text-blue-500" /> {t("common.edit")}
                               </button>
                               <button 
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                                 onClick={() => {
                                   setDelProject(prj);
                                   setMenuOpen(null);
@@ -421,30 +421,30 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
       
       <AnimatePresence>
         {addModal && (
-          <div className="fixed inset-0 bg-slate-900/60 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={() => setAddModal(false)}>
+          <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={() => setAddModal(false)}>
             <motion.div 
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
+              className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe border-t border-slate-200 dark:border-slate-800" 
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
-              <div className="text-xl font-black text-slate-900 mb-6">{t("admin_home.new_project")}</div>
+              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 sm:hidden" />
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100 mb-6">{t("admin_home.new_project")}</div>
               <FG label={t("admin_home.project_name")}>
                 <input 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all dark:text-slate-100" 
                   placeholder={t("admin_home.project_name_ph")} 
                   value={newName} onChange={e => setNewName(e.target.value)} 
                 />
               </FG>
               <FG label={t("admin_home.project_desc")}>
                 <input 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all dark:text-slate-100" 
                   value={newDesc} onChange={e => setNewDesc(e.target.value)} 
                 />
               </FG>
               <button 
-                className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors mt-2" 
+                className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors mt-2" 
                 onClick={() => {
                   if (newName.trim()) {
                     onAddProject({ id: uid("PRJ-"), name: newName.trim(), description: newDesc.trim() });
@@ -461,29 +461,29 @@ function AdminHome({ projects, clients, payments, instDefs, expenses, plans, onS
 
       <AnimatePresence>
         {editModal && (
-          <div className="fixed inset-0 bg-slate-900/60 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={() => setEditModal(null)}>
+          <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[300] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={() => setEditModal(null)}>
             <motion.div 
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
+              className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe border-t border-slate-200 dark:border-slate-800" 
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
-              <div className="text-xl font-black text-slate-900 mb-6">{t("common.edit")} {t("admin_home.projects_tab")}</div>
+              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 sm:hidden" />
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100 mb-6">{t("common.edit")} {t("admin_home.projects_tab")}</div>
               <FG label={t("admin_home.project_name")}>
                 <input 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all dark:text-slate-100" 
                   value={editName} onChange={e => setEditName(e.target.value)} 
                 />
               </FG>
               <FG label={t("admin_home.project_desc")}>
                 <input 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500 transition-all dark:text-slate-100" 
                   value={editDesc} onChange={e => setEditDesc(e.target.value)} 
                 />
               </FG>
               <button 
-                className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors mt-2" 
+                className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors mt-2" 
                 onClick={() => {
                   if (editName.trim()) {
                     onUpdateProject({ ...editModal, name: editName.trim(), description: editDesc.trim() });
@@ -543,21 +543,21 @@ class ErrorBoundary extends (Component as any) {
       } catch (e) {}
       
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 max-w-md w-full shadow-xl">
-            <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 max-w-md w-full shadow-xl">
+            <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mb-6">
               <AlertCircle size={32} />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 mb-2">Something went wrong</h1>
-            <p className="text-slate-500 font-medium mb-6">The application encountered an unexpected error. Please try refreshing the page.</p>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-6 overflow-auto max-h-40">
-              <pre className="text-[10px] font-mono text-rose-600 whitespace-pre-wrap">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">Something went wrong</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium mb-6">The application encountered an unexpected error. Please try refreshing the page.</p>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 mb-6 overflow-auto max-h-40">
+              <pre className="text-[10px] font-mono text-rose-600 dark:text-rose-400 whitespace-pre-wrap">
                 {JSON.stringify(errorInfo, null, 2)}
               </pre>
             </div>
             <button 
               onClick={() => window.location.reload()}
-              className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-colors"
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-4 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors"
             >
               Refresh Page
             </button>
@@ -572,6 +572,28 @@ class ErrorBoundary extends (Component as any) {
 // ROOT APP COMPONENT
 export default function App() {
   const { t } = useLanguage();
+  const [theme, setTheme] = useState(() => localStorage.getItem("marq_theme") || "light");
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const currentTheme = localStorage.getItem("marq_theme") || "light";
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("marq_theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
   const [auth, setAuth] = useState<any>(() => {
     const saved = localStorage.getItem("marq_auth");
     return saved ? JSON.parse(saved) : null;
@@ -829,7 +851,10 @@ export default function App() {
   };
   
   const addClient = async (c: any) => {
-    if (clients.find(cl => cl.id === c.id)) { alert("এই ID আছে"); return; }
+    if (clients.find(cl => cl.id === c.id)) { 
+      showToast("এই ID ইতিমধ্যে ব্যবহার করা হয়েছে", 'e'); 
+      return; 
+    }
     try {
       const clean = sanitize(c, CLIENT_FIELDS);
       await setDoc(doc(db, "clients", clean.id), clean);
@@ -1196,10 +1221,10 @@ export default function App() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-        <div className="text-sm font-bold text-slate-500">লোডিং...</div>
+        <div className="w-12 h-12 border-4 border-slate-200 dark:border-slate-800 border-t-slate-900 dark:border-t-slate-100 rounded-full animate-spin" />
+        <div className="text-sm font-bold text-slate-500 dark:text-slate-400">লোডিং...</div>
       </div>
     </div>
   );
@@ -1223,8 +1248,8 @@ export default function App() {
   const pendingCount = payments.filter((p: any) => p.status === "pending").length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="fixed top-0 left-0 right-0 h-16 bg-slate-900 flex items-center px-4 gap-3 z-[100] shadow-md no-print">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-slate-900 dark:bg-slate-950 flex items-center px-4 gap-3 z-[100] shadow-md no-print border-b border-white/5">
         <div className="flex-1 min-w-0 flex items-center gap-3">
           <img 
             src="/logo.png" 
@@ -1245,6 +1270,17 @@ export default function App() {
             <Clock size={12} /> {pendingCount}
           </div>
         )}
+        <button 
+          onClick={toggleTheme}
+          className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors text-slate-300"
+          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        >
+          {theme === 'light' ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          )}
+        </button>
         <button 
           className="w-10 h-10 bg-white/10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/20 transition-colors" 
           onClick={() => setDrawer(true)}

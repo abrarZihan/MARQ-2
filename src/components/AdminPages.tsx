@@ -3,7 +3,7 @@ import { useLanguage } from "../lib/i18n";
 import { motion, AnimatePresence } from "motion/react";
 import { BDT, BDTshort, ac, initials, uid, todayStr, cn } from "../lib/utils";
 import { FG, ConfirmDelete } from "./Shared";
-import { Eye, EyeOff, ShieldPlus, KeyRound, Trash2, ShieldMinus, Search, Receipt } from "lucide-react";
+import { Eye, EyeOff, ShieldPlus, KeyRound, Trash2, ShieldMinus, Search, Receipt, X } from "lucide-react";
 import { ReceiptSheet } from "./ProjectModals";
 
 export function AdminProfile({ admin, onUpdate }: any) {
@@ -31,7 +31,7 @@ export function AdminProfile({ admin, onUpdate }: any) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 mb-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-5">
           <div 
             style={{ backgroundColor: color + "20", color }} 
@@ -40,11 +40,11 @@ export function AdminProfile({ admin, onUpdate }: any) {
             {initials(admin.name)}
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900">{admin.name}</div>
-            <div className="text-sm font-bold text-slate-500 mt-1">@{admin.username}</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-slate-100">{admin.name}</div>
+            <div className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">@{admin.username}</div>
             <span className={cn(
               "px-3 py-1 rounded-lg text-xs font-bold inline-block mt-3",
-              admin.role === "superadmin" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"
+              admin.role === "superadmin" ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
             )}>
               {admin.role === "superadmin" ? t('common.super_admin') : t('common.admin')}
             </span>
@@ -52,22 +52,22 @@ export function AdminProfile({ admin, onUpdate }: any) {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400">
             <KeyRound size={20} />
           </div>
-          <h2 className="text-lg font-black text-slate-900">{t('common.change_password')}</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">{t('common.change_password')}</h2>
         </div>
         
         <FG label={t('common.current_password')}>
           <div className="relative">
             <input 
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all pr-12" 
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all pr-12 text-slate-900 dark:text-slate-100" 
               type={showO ? "text" : "password"} 
               value={old} onChange={e => setOld(e.target.value)} 
             />
-            <button onClick={() => setShowO(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
+            <button onClick={() => setShowO(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1">
               {showO ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -76,11 +76,11 @@ export function AdminProfile({ admin, onUpdate }: any) {
         <FG label={t('common.new_password')}>
           <div className="relative">
             <input 
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all pr-12" 
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all pr-12 text-slate-900 dark:text-slate-100" 
               type={showN ? "text" : "password"} 
               value={nw} onChange={e => setNw(e.target.value)} 
             />
-            <button onClick={() => setShowN(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
+            <button onClick={() => setShowN(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1">
               {showN ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -88,7 +88,7 @@ export function AdminProfile({ admin, onUpdate }: any) {
         
         <FG label={t('common.confirm_password')}>
           <input 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" 
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100" 
             type="password" 
             value={conf} onChange={e => setConf(e.target.value)} 
           />
@@ -99,7 +99,7 @@ export function AdminProfile({ admin, onUpdate }: any) {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
               <div className={cn(
                 "p-4 rounded-xl mb-6 text-sm font-bold border",
-                msg.t === "s" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
+                msg.t === "s" ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800" : "bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800"
               )}>
                 {msg.v}
               </div>
@@ -107,7 +107,7 @@ export function AdminProfile({ admin, onUpdate }: any) {
           )}
         </AnimatePresence>
         
-        <button className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors mt-2" onClick={save}>
+        <button className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors mt-2" onClick={save}>
           {t('common.change_password')}
         </button>
       </div>
@@ -140,19 +140,27 @@ export function AdminPaymentsPage({ payments, clients, instDefs, projects }: any
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
       <div className="mb-6">
-        <h1 className="text-xl font-black text-slate-900">{t('nav.payments')}</h1>
-        <p className="text-xs font-medium text-slate-500">{t('project_modals.payment_record')}</p>
+        <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">{t('nav.payments')}</h1>
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('project_modals.payment_record')}</p>
       </div>
 
-      <div className="relative mb-6">
+      <div className="relative mb-6 group">
         <input 
-          className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-slate-400 shadow-sm" 
+          className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 shadow-sm text-slate-900 dark:text-slate-100" 
           placeholder={t('client_info.search_ph')}
           value={search} onChange={e => setSearch(e.target.value)}
         />
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-slate-600 dark:group-focus-within:text-slate-300 transition-colors">
           <Search size={18} />
         </div>
+        {search && (
+          <button 
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -162,14 +170,14 @@ export function AdminPaymentsPage({ payments, clients, instDefs, projects }: any
           const prj = projects.find((pr: any) => pr.id === c?.projectId);
           
           return (
-            <div key={p.id} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center justify-between gap-4">
+            <div key={p.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-extrabold text-slate-900">{c?.name || p.clientId}</div>
-                <div className="text-xs font-bold text-slate-400">{p.date}</div>
+                <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{c?.name || p.clientId}</div>
+                <div className="text-xs font-bold text-slate-400 dark:text-slate-500">{p.date}</div>
               </div>
               <div className="text-right shrink-0">
                 <button 
-                  className="flex items-center gap-1.5 text-xs font-black text-blue-600 hover:text-blue-700 underline uppercase tracking-wider"
+                  className="flex items-center gap-1.5 text-xs font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline uppercase tracking-wider"
                   onClick={() => setSelPay(p)}
                 >
                   <span className="text-sm">🧾</span>
@@ -180,9 +188,9 @@ export function AdminPaymentsPage({ payments, clients, instDefs, projects }: any
           );
         })}
         {filtered.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 border-dashed">
-            <div className="text-slate-300 mb-2 flex justify-center"><Receipt size={48} /></div>
-            <div className="text-sm font-bold text-slate-400">{t('project_detail.no_activity')}</div>
+          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 border-dashed">
+            <div className="text-slate-300 dark:text-slate-700 mb-2 flex justify-center"><Receipt size={48} /></div>
+            <div className="text-sm font-bold text-slate-400 dark:text-slate-500">{t('project_detail.no_activity')}</div>
           </div>
         )}
       </div>
@@ -216,11 +224,11 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-black text-slate-900">{t('common.admin_management')}</h1>
-          <p className="text-xs font-medium text-slate-500">{t('common.admins_count', { count: admins.length })}</p>
+          <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">{t('common.admin_management')}</h1>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('common.admins_count', { count: admins.length })}</p>
         </div>
         <button 
-          className="bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2" 
+          className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm flex items-center gap-2" 
           onClick={() => setAddModal(true)}
         >
           <ShieldPlus size={18} />
@@ -235,7 +243,7 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
           const color = isSuper ? "#f59e0b" : ac(adm.id);
           
           return (
-            <div key={adm.id} className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-4 shadow-sm">
+            <div key={adm.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4 shadow-sm">
               <div 
                 style={{ backgroundColor: color + "20", color }} 
                 className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black shrink-0"
@@ -244,29 +252,29 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-base font-extrabold text-slate-900">{adm.name}</span>
-                  {isSelf && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700">{t('common.you')}</span>}
+                  <span className="text-base font-extrabold text-slate-900 dark:text-slate-100">{adm.name}</span>
+                  {isSelf && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">{t('common.you')}</span>}
                   <span className={cn(
                     "px-2 py-0.5 rounded-md text-[10px] font-bold",
-                    isSuper ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"
+                    isSuper ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                   )}>
                     {isSuper ? t('common.super_admin') : t('common.admin')}
                   </span>
-                  {adm.isTemp && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-100 text-orange-600">{t('common.temp_pw')}</span>}
+                  {adm.isTemp && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">{t('common.temp_pw')}</span>}
                 </div>
-                <div className="text-xs font-bold text-slate-400">@{adm.username}</div>
+                <div className="text-xs font-bold text-slate-400 dark:text-slate-500">@{adm.username}</div>
               </div>
               {!isSuper && (
                 <div className="flex gap-2">
                   <button 
-                    className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center hover:bg-orange-100 transition-colors" 
+                    className="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-800 transition-colors" 
                     onClick={() => { setReset(adm); setTempPw(""); }}
                   >
                     <KeyRound size={18} />
                   </button>
                   {!isSelf && (
                     <button 
-                      className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center hover:bg-rose-100 transition-colors" 
+                      className="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center hover:bg-rose-100 dark:hover:bg-rose-800 transition-colors" 
                       onClick={() => setDel(adm)}
                     >
                       <ShieldMinus size={18} />
@@ -285,27 +293,27 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
             <motion.div 
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
+              className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
-              <div className="text-xl font-black text-slate-900 mb-6">{t('common.new_admin_title')}</div>
+              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 sm:hidden" />
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100 mb-6">{t('common.new_admin_title')}</div>
               
               <FG label={t('common.full_name')}>
-                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" value={newF.name} onChange={e => s("name", e.target.value)} />
+                <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100" value={newF.name} onChange={e => s("name", e.target.value)} />
               </FG>
               <div className="grid grid-cols-2 gap-4">
                 <FG label={t('common.username')}>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" value={newF.username} onChange={e => s("username", e.target.value)} />
+                  <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100" value={newF.username} onChange={e => s("username", e.target.value)} />
                 </FG>
                 <FG label={t('common.temp_password')}>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" value={newF.password} onChange={e => s("password", e.target.value)} />
+                  <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100" value={newF.password} onChange={e => s("password", e.target.value)} />
                 </FG>
               </div>
               
               <div className="flex gap-3 mt-4">
                 <button 
-                  className="flex-1 bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors" 
+                  className="flex-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors" 
                   onClick={() => {
                     if (!newF.name || !newF.username || !newF.password) { alert(t('common.error_fill_all')); return; }
                     onAdd({ id: uid("adm-"), name: newF.name, username: newF.username, password: newF.password, role: "admin", isTemp: true });
@@ -314,7 +322,7 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
                 >
                   {t('common.add_button')}
                 </button>
-                <button className="flex-1 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors" onClick={() => setAddModal(false)}>{t('common.cancel')}</button>
+                <button className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={() => setAddModal(false)}>{t('common.cancel')}</button>
               </div>
             </motion.div>
           </div>
@@ -327,19 +335,19 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
             <motion.div 
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
+              className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 pb-safe" 
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
-              <div className="text-xl font-black text-slate-900 mb-6">{t('common.reset_password_title', { name: resetTarget.name })}</div>
+              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6 sm:hidden" />
+              <div className="text-xl font-black text-slate-900 dark:text-slate-100 mb-6">{t('common.reset_password_title', { name: resetTarget.name })}</div>
               
               <FG label={t('common.new_temp_password')}>
-                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all" value={tempPw} onChange={e => setTempPw(e.target.value)} />
+                <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-600 transition-all text-slate-900 dark:text-slate-100" value={tempPw} onChange={e => setTempPw(e.target.value)} />
               </FG>
               
               <div className="flex gap-3 mt-4">
                 <button 
-                  className="flex-1 bg-orange-100 text-orange-700 font-bold py-3.5 rounded-xl hover:bg-orange-200 transition-colors" 
+                  className="flex-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold py-3.5 rounded-xl hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors" 
                   onClick={() => {
                     if (!tempPw) { alert(t('common.error_enter_pw')); return; }
                     onResetPw(resetTarget.id, tempPw);
@@ -348,7 +356,7 @@ export function AdminManagePage({ admins, onAdd, onDelete, onResetPw, currentAdm
                 >
                   {t('common.reset_button')}
                 </button>
-                <button className="flex-1 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors" onClick={() => setReset(null)}>{t('common.cancel')}</button>
+                <button className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={() => setReset(null)}>{t('common.cancel')}</button>
               </div>
             </motion.div>
           </div>
