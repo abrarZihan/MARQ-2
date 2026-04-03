@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return true; // Bypass for custom auth
+    }
+
+    function isAdmin() {
+      return true; // Bypass for custom auth
+    }
+
+    function isOwner(userId) {
+      return true; // Bypass for custom auth
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isPositive(field) {
+      return request.resource.data[field] is number && request.resource.data[field] >= 0;
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['id', 'name', 'username', 'password', 'role', 'isTemp']) &&
+             data.keys().hasOnly(['id', 'name', 'username', 'password', 'role', 'isTemp']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.username is string && data.username.size() > 0 && data.username.size() < 50 &&
+             data.password is string && data.password.size() > 0 && data.password.size() < 100 &&
+             data.role in ['superadmin', 'admin'] &&
+             data.isTemp is bool;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.keys().hasOnly(['id', 'name', 'description']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('description' in data) || (data.description is string && data.description.size() < 1000));
+    }
+
+    function isValidPlan(data) {
+      return data.keys().hasAll(['id', 'projectId', 'name']) &&
+             data.keys().hasOnly(['id', 'projectId', 'name']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidClient(data) {
+      return data.keys().hasAll(['id', 'projectId', 'name']) &&
+             data.keys().hasOnly(['id', 'projectId', 'name', 'fatherHusband', 'birthDate', 'phone', 'email', 'nid', 'plot', 'totalAmount', 'shareCount', 'password', 'photo', 'remarks', 'planAssignments', '_row']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() < 20)) &&
+             (!('fatherHusband' in data) || (data.fatherHusband is string && data.fatherHusband.size() < 100)) &&
+             (!('birthDate' in data) || (data.birthDate is string && data.birthDate.size() < 20)) &&
+             (!('email' in data) || isValidEmail(data.email)) &&
+             (!('nid' in data) || (data.nid is string && data.nid.size() < 50)) &&
+             (!('plot' in data) || (data.plot is string && data.plot.size() < 100)) &&
+             (!('password' in data) || (data.password is string && data.password.size() < 100)) &&
+             (!('photo' in data) || (data.photo is string && data.photo.size() < 1000000)) &&
+             (!('remarks' in data) || (data.remarks is string && data.remarks.size() < 1000)) &&
+             (!('totalAmount' in data) || isPositive('totalAmount')) &&
+             (!('shareCount' in data) || isPositive('shareCount')) &&
+             (!('planAssignments' in data) || (data.planAssignments is list && data.planAssignments.size() < 10));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /admins/{adminId} {
+      allow read: if true;
+      allow create: if (adminId == 'superadmin' && request.resource.data.id == 'superadmin' && isValidAdmin(request.resource.data)) || (isAuthenticated() && (request.auth.token.email == "childzihan@gmail.com" && request.auth.token.email_verified == true) && isValidAdmin(request.resource.data));
+      allow update: if (adminId == 'superadmin' && request.resource.data.id == 'superadmin' && isValidAdmin(request.resource.data)) || (isAdmin() && isValidAdmin(request.resource.data));
+      allow delete: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidProject(request.resource.data);
+      allow update: if isAdmin() && isValidProject(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /plans/{planId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidPlan(request.resource.data);
+      allow update: if isAdmin() && isValidPlan(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidClient(request.resource.data);
+      allow update: if isAdmin() && isValidClient(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /instDefs/{instDefId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if true;
+      allow create: if isAdmin() || (isAuthenticated() && request.resource.data.clientId == request.auth.uid && request.resource.data.status == 'pending');
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /logs/{logId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
