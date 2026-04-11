@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator or sub-admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["superadmin", "admin"] },
+        "isTemp": { "type": "boolean" }
+      },
+      "required": ["id", "name", "username", "password", "role"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Real estate project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Plan": {
+      "title": "Plan",
+      "description": "Installment plan type for a project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["id", "projectId", "name"]
+    },
+    "InstDef": {
+      "title": "Installment Definition",
+      "description": "Installment column definition for a plan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "planId": { "type": "string" },
+        "title": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "targetAmount": { "type": "number" }
+      },
+      "required": ["id", "planId", "title", "targetAmount"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Customer/Client of a project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "name": { "type": "string" },
+        "fatherHusband": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "nid": { "type": "string" },
+        "plot": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "planAssignments": { 
+          "type": "array", 
+          "items": { 
+            "type": "object", 
+            "properties": { 
+              "planId": { "type": "string" }, 
+              "shareCount": { "type": "number" } 
+            } 
+          },
+          "description": "List of plans and share counts assigned to the client"
+        },
+        "password": { "type": "string" },
+        "photo": { "type": "string" },
+        "remarks": { "type": "string" }
+      },
+      "required": ["id", "projectId", "name", "phone"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment record for a client's installment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "instDefId": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "note": { "type": "string" },
+        "status": { "type": "string", "enum": ["approved", "pending", "rejected"] },
+        "approvedBy": { "type": "string" }
+      },
+      "required": ["id", "clientId", "instDefId", "amount", "date", "status"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Project expense record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "date": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "projectId", "date", "category", "amount"]
+    },
+    "Log": {
+      "title": "Audit Log",
+      "description": "System activity log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "adminId": { "type": "string" },
+        "adminName": { "type": "string" },
+        "action": { "type": "string" },
+        "target": { "type": "string" },
+        "detail": { "type": "string" },
+        "projectId": { "type": "string" },
+        "ts": { "type": "string" }
+      },
+      "required": ["id", "adminId", "action", "ts"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": { "schema": "Admin", "description": "Admin users" },
+    "/projects/{projectId}": { "schema": "Project", "description": "Projects list" },
+    "/clients/{clientId}": { "schema": "Client", "description": "Clients list" },
+    "/plans/{planId}": { "schema": "Plan", "description": "Installment plans" },
+    "/instDefs/{instDefId}": { "schema": "InstDef", "description": "Installment definitions" },
+    "/payments/{paymentId}": { "schema": "Payment", "description": "Payment records" },
+    "/expenses/{expenseId}": { "schema": "Expense", "description": "Expense records" },
+    "/logs/{logId}": { "schema": "Log", "description": "Audit logs" }
+  }
+}
