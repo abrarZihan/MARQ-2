@@ -25,8 +25,9 @@ export interface Client {
   password: string;
   photo: string;
   schedules?: Record<string, number>;
-  planAssignments?: { planId: string; assignedAt: string; shareCount?: number }[];
+  planAssignments?: { planId: string; assignedAt?: string; shareCount?: number }[];
   uid?: string;
+  remarks?: string;
 }
 
 export interface InstDef {
@@ -36,11 +37,11 @@ export interface InstDef {
   title: string;
   dueDate: string;
   targetAmount: number;
-  isGlobal?: boolean;
 }
 
 export interface Payment {
   id: string;
+  projectId?: string;
   clientId: string;
   instDefId: string;
   amount: number;
@@ -85,6 +86,10 @@ export interface AuthUser {
   id: string;
   username: string;
   name: string;
+  email?: string;
+  phone?: string;
+  photo?: string;
+  plot?: string;
   password?: string;
   role: "admin" | "superadmin" | "client";
   displayName?: string;

@@ -8,219 +8,107 @@ import { Trash2, Clock, CheckCircle2, Building2, Table, Plus, Printer, FileText,
 import { useLanguage } from "../../../lib/i18n";
 import { useAppStore } from "../../../store/appStore";
 import { db, handleFirestoreError, OperationType } from "../../../firebase";
-import { doc, setDoc, updateDoc, deleteDoc, writeBatch } from "firebase/firestore";
+import { doc, setDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, collection, where } from "firebase/firestore";
+import { Project, Plan, Client, InstDef, Payment, Expense } from "../../../types";
 
 const PLAN_FIELDS = ['id', 'projectId', 'name'];
-const INST_DEF_FIELDS = ['id', 'projectId', 'planId', 'title', 'dueDate', 'targetAmount', 'isGlobal'];
+const INST_DEF_FIELDS = ['id', 'projectId', 'planId', 'title', 'dueDate', 'targetAmount'];
 const PAYMENT_FIELDS = ['id', 'clientId', 'instDefId', 'amount', 'date', 'status', 'note', 'method', 'trxId', 'approvedBy'];
 
-const sanitize = (data: any, allowedFields: string[]) => {
-  const clean: any = {};
+const sanitize = (data: Record<string, any>, allowedFields: string[]) => {
+  const clean: Record<string, any> = {};
   allowedFields.forEach(f => {
     if (data[f] !== undefined) clean[f] = data[f];
   });
   return clean;
 };
 
+import { useActions } from "../../../hooks/useActions";
+
 export default function SheetTab({ projectId }: { projectId: string }) {
   const { t } = useLanguage();
   const { projects, clients, instDefs, plans, payments, expenses, auth, setToast } = useAppStore();
+  const actions = useActions();
   
   const project = projects.find(p => p.id === projectId);
   const isSuperAdmin = auth?.role === "superadmin";
-  const adminUser = auth?.user;
 
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [showAddPlan, setShowAddPlan] = useState(false);
   const [newPlanName, setNewPlanName] = useState("");
   const [search, setSearch] = useState("");
-  const [editPlanModal, setEditPlanModal] = useState<any>(null);
+  const [editPlanModal, setEditPlanModal] = useState<Plan | null>(null);
   const [editPlanName, setEditPlanName] = useState("");
-  const [longPressTimer, setLongPressTimer] = useState<any>(null);
-  const [cellModal, setCellModal] = useState<any>(null);
-  const [viewR, setViewR] = useState<any>(null);
+  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [cellModal, setCellModal] = useState<{client: Client, instDef: InstDef} | null>(null);
+  const [viewR, setViewR] = useState<{payment: Payment, instDef: InstDef, client: Client} | null>(null);
   const [addDefModal, setAddDefModal] = useState(false);
-  const [editDefModal, setEditDefModal] = useState<any>(null);
-  const [longPressDefTimer, setLongPressDefTimer] = useState<any>(null);
-  const [deletePlanTarget, setDeletePlanTarget] = useState<any>(null);
+  const [editDefModal, setEditDefModal] = useState<InstDef | null>(null);
+  const [longPressDefTimer, setLongPressDefTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [deletePlanTarget, setDeletePlanTarget] = useState<Plan | null>(null);
 
-  const showToast = (m: string, t: 's' | 'e' = 's') => {
-    setToast({ m, t });
-    setTimeout(() => setToast(null), 3000);
-  };
 
-  const addLog = async (action: string, target: any, detail: any) => {
-    if (!adminUser) return;
-    const sTarget = typeof target === 'object' ? JSON.stringify(target) : String(target || "");
-    const sDetail = typeof detail === 'object' ? JSON.stringify(detail) : String(detail || "");
-    const newLog = { id: uid("LOG"), adminId: adminUser.id, adminName: adminUser.name, action, target: sTarget, detail: sDetail, projectId, ts: tsNow() };
-    try {
-      await setDoc(doc(db, "logs", newLog.id), newLog);
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `logs/${newLog.id}`);
-    }
-  };
-
-  const onAddPlan = async (p: any) => {
-    try {
-      const clean = sanitize(p, PLAN_FIELDS);
-      await setDoc(doc(db, "plans", clean.id), clean);
-      addLog("plan_add", clean.name, "নতুন প্ল্যান");
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `plans/${p.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onUpdatePlan = async (p: any) => {
-    try {
-      const clean = sanitize(p, PLAN_FIELDS);
-      await updateDoc(doc(db, "plans", clean.id), clean);
-      addLog("plan_edit", clean.name, "প্ল্যান আপডেট");
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `plans/${p.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onDeletePlan = async (id: string) => {
-    const p = plans.find(x => x.id === id);
-    const defsToDelete = instDefs.filter((d: any) => d.planId === id);
-    const clientsToUpdate = clients.filter((c: any) => (c.planAssignments || []).some((pa: any) => pa.planId === id));
-    const paymentsToDelete = payments.filter((p: any) => 
-      defsToDelete.some((d: any) => d.id === p.instDefId)
-    );
-
-    try {
-      const batch = writeBatch(db);
-      batch.delete(doc(db, "plans", id));
-      defsToDelete.forEach((d: any) => batch.delete(doc(db, "instDefs", d.id)));
-      paymentsToDelete.forEach((p: any) => batch.delete(doc(db, "payments", p.id)));
-      clientsToUpdate.forEach((c: any) => {
-        const nextAssignments = (c.planAssignments || []).filter((pa: any) => pa.planId !== id);
-        batch.update(doc(db, "clients", c.id), { planAssignments: nextAssignments });
-      });
-      await batch.commit();
-      if (p) addLog("plan_delete", p.name, "প্ল্যান মুছে ফেলা হয়েছে");
-      showToast(t("common.success_deleted"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `plans/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onAddDef = async (d: any) => {
-    try {
-      const clean = sanitize(d, INST_DEF_FIELDS);
-      await setDoc(doc(db, "instDefs", clean.id), clean);
-      addLog("instdef_add", clean.title, `৳${clean.targetAmount}`);
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `instDefs/${d.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onUpdateInstDef = async (d: any) => {
-    try {
-      const clean = sanitize(d, INST_DEF_FIELDS);
-      await updateDoc(doc(db, "instDefs", clean.id), clean);
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `instDefs/${d.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onDeleteInstDef = async (id: string) => {
-    const d = instDefs.find(x => x.id === id);
-    try {
-      const relatedPayments = payments.filter(p => p.instDefId === id);
-      const chunks = [];
-      for (let i = 0; i < relatedPayments.length; i += 450) chunks.push(relatedPayments.slice(i, i + 450));
-      for (const chunk of chunks) {
-        const batch = writeBatch(db);
-        chunk.forEach(p => batch.delete(doc(db, "payments", p.id)));
-        await batch.commit();
-      }
-      await deleteDoc(doc(db, "instDefs", id));
-      if (d) addLog("instdef_delete", d.title, "কিস্তি কলাম মুছে ফেলা হয়েছে");
-      showToast(t("common.success_deleted"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `instDefs/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onAddPayment = async (p: any) => {
-    try {
-      const clean = sanitize(p, PAYMENT_FIELDS);
-      await setDoc(doc(db, "payments", clean.id), clean);
-      const c = clients.find(cl => cl.id === clean.clientId);
-      const d = instDefs.find(di => di.id === clean.instDefId);
-      addLog(clean.status === "approved" ? "payment_add" : "payment_pending", `${c?.id} - ${c?.name}`, `${BDT(clean.amount)} — ${d?.title}`);
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `payments/${p.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onDeletePayment = async (id: string) => {
-    const p = payments.find(x => x.id === id);
-    try {
-      await deleteDoc(doc(db, "payments", id));
-      if (p) {
-        const c = clients.find(cl => cl.id === p.clientId);
-        const d = instDefs.find(di => di.id === p.instDefId);
-        addLog("payment_delete", `${c?.name || p.clientId}`, `${BDT(p.amount)} — ${d?.title}`);
-      }
-      showToast(t("common.success_deleted"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `payments/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const prjPlans = plans.filter((pl: any) => pl.projectId === projectId);
+  const prjPlans = plans.filter((pl: Plan) => pl.projectId === projectId);
   useEffect(() => {
     if (prjPlans.length > 0 && !activePlanId) setActivePlanId(prjPlans[0].id);
   }, [prjPlans, activePlanId]);
 
   if (!project) return null;
 
-  const basePrjClients = clients.filter((c: any) => {
+  const basePrjClients = clients.filter((c: Client) => {
     if (c.projectId !== projectId) return false;
     const assignments = c.planAssignments || [];
     if (assignments.length === 0) return activePlanId === prjPlans[0]?.id;
-    return assignments.some((pa: any) => pa.planId === activePlanId);
+    return assignments.some((pa) => pa.planId === activePlanId);
   });
 
-  const prjClients = basePrjClients.filter((c: any) => c.name?.toLowerCase()?.includes(search.toLowerCase()));
-  const allPrjClients = clients.filter((c: any) => c.projectId === projectId);
-  const prjDefs = instDefs.filter((d: any) => d.planId === activePlanId || (d.projectId === projectId && d.isGlobal));
-  const prjExpenses = expenses.filter((e: any) => e.projectId === projectId);
-  const allPrjDefs = instDefs.filter((d: any) => d.projectId === projectId);
+  const prjClients = basePrjClients.filter((c: Client) => c.name?.toLowerCase()?.includes(search.toLowerCase()));
   
-  const projectCollected = payments.filter((p: any) => p.status === "approved" && allPrjClients.some(c => c.id === p.clientId) && allPrjDefs.some(d => d.id === p.instDefId)).reduce((s, p) => s + p.amount, 0);
-  const projectTarget = allPrjClients.reduce((s, c) => {
-    const assignments = c.planAssignments || [];
-    if (assignments.length > 0) {
-      return s + assignments.reduce((as: number, pa: any) => {
-        const pDefs = instDefs.filter((d: any) => d.planId === pa.planId);
-        return as + (pDefs.reduce((ds: number, d: any) => ds + d.targetAmount, 0) * pa.shareCount);
-      }, 0);
-    } else {
-      const firstPlan = prjPlans[0];
-      if (!firstPlan) return s;
-      const pDefs = instDefs.filter((d: any) => d.planId === firstPlan.id);
-      return s + (pDefs.reduce((ds: number, d: any) => ds + d.targetAmount, 0) * (c.shareCount || 1));
-    }
+  const prjDefs = instDefs.filter((d: InstDef) => d.planId === activePlanId);
+  const prjExpenses = expenses.filter((e: Expense) => e.projectId === projectId);
+  
+  // Revised calculations to be plan-specific
+  const basePrjClientIds = new Set(basePrjClients.map(c => c.id));
+  const prjDefsForPlan = prjDefs;
+  const prjDefIds = prjDefsForPlan.map(d => d.id);
+  
+  const approvedPaymentsForPlan = payments.filter((p: Payment) => 
+    p.status === "approved" && 
+    prjDefIds.includes(p.instDefId) &&
+    basePrjClientIds.has(p.clientId)
+  );
+  
+  const projectCollected = approvedPaymentsForPlan.reduce((s, p) => s + p.amount, 0);
+  
+  console.log("SheetTab Summary Debug:", {
+    activePlanId,
+    prjDefIds: prjDefIds.length,
+    approvedPaymentsCount: approvedPaymentsForPlan.length,
+    collected: projectCollected,
+    // Sampling payments to see if they look correct
+    samplePayment: approvedPaymentsForPlan[0]
+  });
+
+  const projectTarget = prjClients.reduce((s, c) => {
+    const assignment = c.planAssignments?.find(pa => pa.planId === activePlanId);
+    const sc = assignment ? (assignment.shareCount || 1) : (c.shareCount || 1);
+    
+    // Sum targets for this specific plan for this client
+    const clientPlanTarget = prjDefsForPlan.reduce((ds, d) => {
+      return ds + (d.targetAmount * sc);
+    }, 0);
+
+    return s + clientPlanTarget;
   }, 0);
+  
+  console.log("SheetTab Target Debug:", {
+    activePlanId,
+    clientCount: prjClients.length,
+    target: projectTarget
+  });
+
   const projectDue = Math.max(0, projectTarget - projectCollected);
-  const totalCollected = payments.filter((p: any) => prjDefs.some(d => d.id === p.instDefId) && p.status === "approved").reduce((s, p) => s + p.amount, 0);
+  const totalCollected = projectCollected;
 
   return (
     <>
@@ -245,7 +133,7 @@ export default function SheetTab({ projectId }: { projectId: string }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 no-print">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-[calc(100vw-120px)] sm:max-w-[400px]">
-            {prjPlans.map((pl: any) => (
+            {prjPlans.map((pl: Plan) => (
               <button key={pl.id} onClick={() => !longPressTimer && setActivePlanId(pl.id)} onMouseDown={() => setLongPressTimer(setTimeout(() => { setEditPlanModal(pl); setEditPlanName(pl.name); }, 600))} onMouseUp={() => { clearTimeout(longPressTimer); setLongPressTimer(null); }} onTouchStart={() => setLongPressTimer(setTimeout(() => { setEditPlanModal(pl); setEditPlanName(pl.name); }, 600))} onTouchEnd={() => { clearTimeout(longPressTimer); setLongPressTimer(null); }} className={cn("px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border", activePlanId === pl.id ? "bg-app-tab-active border-app-tab-active text-app-bg shadow-md" : "bg-app-surface border-app-border text-app-text-secondary hover:bg-app-bg")}>
                 {pl.name}
               </button>
@@ -276,9 +164,9 @@ export default function SheetTab({ projectId }: { projectId: string }) {
                     {search && <button onClick={() => setSearch("")} className="absolute right-2 text-white/40 p-0.5"><X size={10} /></button>}
                   </div>
                 </th>
-                {prjDefs.map((d: any, i: number) => (
+                {prjDefs.map((d: InstDef, i: number) => (
                   <th key={`${d.id}-${i}`} className="sticky top-0 z-10 bg-app-nav-bg text-white p-3 min-w-[120px] font-bold border-r border-b border-app-border/30 text-center cursor-pointer select-none group relative" onMouseDown={() => setLongPressDefTimer(setTimeout(() => setEditDefModal(d), 600))} onMouseUp={() => { clearTimeout(longPressDefTimer); setLongPressDefTimer(null); }} onTouchStart={() => setLongPressDefTimer(setTimeout(() => setEditDefModal(d), 600))} onTouchEnd={() => { clearTimeout(longPressDefTimer); setLongPressDefTimer(null); }}>
-                    <div className="text-[11px] mb-1 flex items-center justify-center gap-1">{d.title} {d.isGlobal && <span className="text-[8px] bg-blue-500/20 text-blue-400 px-1 rounded border border-blue-500/30">BASIC</span>}</div>
+                    <div className="text-[11px] mb-1 flex items-center justify-center gap-1">{d.title}</div>
                     <div className="text-[9px] text-white/70 font-medium">{BDT(d.targetAmount)}</div>
                     {d.dueDate && <div className="text-[8px] text-white/50 mt-0.5">{d.dueDate}</div>}
                   </th>
@@ -287,11 +175,11 @@ export default function SheetTab({ projectId }: { projectId: string }) {
               </tr>
             </thead>
             <tbody>
-              {prjClients.map((client: any) => {
-                const assignment = client.planAssignments?.find((pa: any) => pa.planId === activePlanId);
+              {prjClients.map((client: Client) => {
+                const assignment = client.planAssignments?.find((pa) => pa.planId === activePlanId);
                 const shareCount = assignment ? assignment.shareCount : (client.shareCount || 1);
                 const rowTotal = prjDefs.reduce((s, d) => s + clientPaidForDef(client.id, d.id, payments), 0);
-                const rowTarget = prjDefs.reduce((s, d) => s + (d.isGlobal ? 1 : shareCount) * d.targetAmount, 0);
+                const rowTarget = prjDefs.reduce((s, d) => s + shareCount * d.targetAmount, 0);
                 return (
                   <tr key={client.id} className="group hover:bg-app-bg">
                     <td className="sticky left-0 z-20 bg-app-surface group-hover:bg-app-bg border-r border-b border-app-border p-3 shadow-[4px_0_8_rgba(0,0,0,0.03)]">
@@ -303,11 +191,10 @@ export default function SheetTab({ projectId }: { projectId: string }) {
                         </div>
                       </div>
                     </td>
-                    {prjDefs.map((d: any, i: number) => {
-                      const sc = d.isGlobal ? 1 : shareCount;
-                      const cellTarget = d.targetAmount * sc;
+                    {prjDefs.map((d: InstDef, i: number) => {
+                      const cellTarget = d.targetAmount * shareCount;
                       const paid = clientPaidForDef(client.id, d.id, payments);
-                      const pendingAmt = payments.filter((p: any) => p.clientId === client.id && p.instDefId === d.id && p.status === "pending").reduce((s, p) => s + p.amount, 0);
+                      const pendingAmt = payments.filter((p: Payment) => p.clientId === client.id && p.instDefId === d.id && p.status === "pending").reduce((s, p) => s + p.amount, 0);
                       const st = cellStatus(paid, cellTarget);
                       const pct = Math.round((paid / cellTarget) * 100);
                       const m = STATUS[st];
@@ -331,11 +218,11 @@ export default function SheetTab({ projectId }: { projectId: string }) {
               })}
               <tr className="bg-app-nav-bg text-white font-bold">
                 <td className="sticky left-0 z-20 bg-app-nav-bg border-r border-white/10 p-3 text-white text-xs shadow-[2px_0_5px_rgba(0,0,0,0.2)]">{t("project_detail.total_col")}</td>
-                {prjDefs.map((d: any, i: number) => {
+                {prjDefs.map((d: InstDef, i: number) => {
                   const ct = prjClients.reduce((s, c) => s + clientPaidForDef(c.id, d.id, payments), 0);
                   const cT = prjClients.reduce((s, c) => {
-                    const assignment = c.planAssignments?.find((pa: any) => pa.planId === activePlanId);
-                    const sc = d.isGlobal ? 1 : (assignment ? assignment.shareCount : (c.shareCount || 1));
+                    const assignment = c.planAssignments?.find(pa => pa.planId === activePlanId);
+                    const sc = assignment ? (assignment.shareCount || 1) : (c.shareCount || 1);
                     return s + sc * d.targetAmount;
                   }, 0);
                   return (
@@ -358,10 +245,10 @@ export default function SheetTab({ projectId }: { projectId: string }) {
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-app-surface-elevated rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-app-border" onClick={e => e.stopPropagation()}>
               <div className="w-16 h-16 bg-app-bg text-app-text-primary rounded-2xl flex items-center justify-center mb-6 mx-auto border border-app-border"><Table size={32} /></div>
               <h3 className="text-xl font-black text-app-text-primary mb-2 text-center">New Installment Plan</h3>
-              <FG label="Plan Name"><input autoFocus className="w-full px-4 py-3.5 bg-app-bg border border-app-border rounded-2xl text-sm font-bold text-app-text-primary" placeholder="e.g. Revised Plan 2024" value={newPlanName} onChange={e => setNewPlanName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && newPlanName.trim()) { const newId = uid("PLN-"); onAddPlan({ id: newId, projectId, name: newPlanName.trim() }); setActivePlanId(newId); setNewPlanName(""); setShowAddPlan(false); } }} /></FG>
+              <FG label="Plan Name"><input autoFocus className="w-full px-4 py-3.5 bg-app-bg border border-app-border rounded-2xl text-sm font-bold text-app-text-primary" placeholder="e.g. Revised Plan 2024" value={newPlanName} onChange={e => setNewPlanName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && newPlanName.trim()) { const newId = uid("PLN-"); actions.addPlan({ id: newId, projectId, name: newPlanName.trim() }); setActivePlanId(newId); setNewPlanName(""); setShowAddPlan(false); } }} /></FG>
               <div className="flex gap-3 mt-8">
                 <button className="flex-1 bg-app-bg text-app-text-secondary font-bold py-3.5 rounded-2xl hover:bg-app-border border border-app-border" onClick={() => setShowAddPlan(false)}>Cancel</button>
-                <button className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-2xl disabled:opacity-50" disabled={!newPlanName.trim()} onClick={() => { if (newPlanName.trim()) { const newId = uid("PLN-"); onAddPlan({ id: newId, projectId, name: newPlanName.trim() }); setActivePlanId(newId); setNewPlanName(""); setShowAddPlan(false); } }}>Create Plan</button>
+                <button className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-2xl disabled:opacity-50" disabled={!newPlanName.trim()} onClick={() => { if (newPlanName.trim()) { const newId = uid("PLN-"); actions.addPlan({ id: newId, projectId, name: newPlanName.trim() }); setActivePlanId(newId); setNewPlanName(""); setShowAddPlan(false); } }}>Create Plan</button>
               </div>
             </motion.div>
           </div>
@@ -371,20 +258,20 @@ export default function SheetTab({ projectId }: { projectId: string }) {
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-app-surface-elevated rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-app-border" onClick={e => e.stopPropagation()}>
               <div className="w-16 h-16 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-blue-500/20"><Edit2 size={32} /></div>
               <h3 className="text-xl font-black text-app-text-primary mb-2 text-center">Edit Plan Name</h3>
-              <FG label="Plan Name"><input autoFocus className="w-full px-4 py-3.5 bg-app-bg border border-app-border rounded-2xl text-sm font-bold text-app-text-primary" value={editPlanName} onChange={e => setEditPlanName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && editPlanName.trim()) { onUpdatePlan({ ...editPlanModal, name: editPlanName.trim() }); setEditPlanModal(null); } }} /></FG>
+              <FG label="Plan Name"><input autoFocus className="w-full px-4 py-3.5 bg-app-bg border border-app-border rounded-2xl text-sm font-bold text-app-text-primary" value={editPlanName} onChange={e => setEditPlanName(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && editPlanName.trim()) { actions.updatePlan({ ...editPlanModal, name: editPlanName.trim() }); setEditPlanModal(null); } }} /></FG>
               <div className="flex gap-3 mt-8">
                 <button className="flex-1 bg-app-bg text-app-text-secondary font-bold py-3.5 rounded-2xl hover:bg-app-border border border-app-border" onClick={() => setEditPlanModal(null)}>Cancel</button>
-                <button className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-2xl disabled:opacity-50" disabled={!editPlanName.trim()} onClick={() => { if (editPlanName.trim()) { onUpdatePlan({ ...editPlanModal, name: editPlanName.trim() }); setEditPlanModal(null); } }}>Save Changes</button>
+                <button className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-2xl disabled:opacity-50" disabled={!editPlanName.trim()} onClick={() => { if (editPlanName.trim()) { actions.updatePlan({ ...editPlanModal, name: editPlanName.trim() }); setEditPlanModal(null); } }}>Save Changes</button>
               </div>
               {isSuperAdmin && <button className="w-full mt-6 text-rose-600 dark:text-rose-400 font-bold text-xs hover:underline flex items-center justify-center gap-1" onClick={() => setDeletePlanTarget(editPlanModal)}><Trash2 size={12} /> Delete Plan</button>}
             </motion.div>
           </div>
         )}
-        {deletePlanTarget && <ConfirmDeletePlan plan={deletePlanTarget} amount={instDefs.filter((d: any) => d.planId === deletePlanTarget.id).reduce((s: number, d: any) => s + d.targetAmount, 0)} onConfirm={() => { onDeletePlan(deletePlanTarget.id); setDeletePlanTarget(null); setEditPlanModal(null); }} onClose={() => setDeletePlanTarget(null)} />}
-        {viewR && <ReceiptSheet payment={viewR.payment} instDef={viewR.instDef} client={viewR.client} project={project} isSuperAdmin={isSuperAdmin} onDelete={onDeletePayment} onClose={() => setViewR(null)} />}
-        {cellModal && <CellPaySheet client={cellModal.client} instDef={cellModal.instDef} payments={payments} project={project} isSuperAdmin={isSuperAdmin} onSave={(p: any) => { onAddPayment(p); setCellModal(null); }} onDelete={(id: string) => onDeletePayment(id)} onClose={() => setCellModal(null)} />}
-        {addDefModal && <AddDefSheet projectId={projectId} planId={activePlanId} onSave={(d: any) => { onAddDef(d); setAddDefModal(false); }} onClose={() => setAddDefModal(false)} />}
-        {editDefModal && <EditDefSheet def={editDefModal} onSave={(d: any) => { onUpdateInstDef(d); setEditDefModal(null); }} onDelete={(id: string) => { onDeleteInstDef(id); setEditDefModal(null); }} onClose={() => setEditDefModal(null)} />}
+        {deletePlanTarget && <ConfirmDeletePlan plan={deletePlanTarget} amount={instDefs.filter((d: InstDef) => d.planId === deletePlanTarget.id).reduce((s: number, d: InstDef) => s + d.targetAmount, 0)} onConfirm={() => { actions.deletePlan(deletePlanTarget.id); setDeletePlanTarget(null); setEditPlanModal(null); }} onClose={() => setDeletePlanTarget(null)} />}
+        {viewR && <ReceiptSheet payment={viewR.payment} instDef={viewR.instDef} client={viewR.client} project={project} isSuperAdmin={isSuperAdmin} onDelete={actions.deletePayment} onClose={() => setViewR(null)} />}
+        {cellModal && <CellPaySheet client={cellModal.client} instDef={cellModal.instDef} payments={payments} project={project} isSuperAdmin={isSuperAdmin} onSave={(p: Payment) => { actions.addPayment(p); setCellModal(null); }} onDelete={(id: string) => actions.deletePayment(id)} onClose={() => setCellModal(null)} />}
+        {addDefModal && <AddDefSheet projectId={projectId} planId={activePlanId} onSave={(d: InstDef) => { actions.addInstDef(d); setAddDefModal(false); }} onClose={() => setAddDefModal(false)} />}
+        {editDefModal && <EditDefSheet def={editDefModal} onSave={(d: InstDef) => { actions.updateInstDef(d); setEditDefModal(null); }} onDelete={(id: string) => { actions.deleteInstDef(id, activePlanId!); setEditDefModal(null); }} onClose={() => setEditDefModal(null)} />}
       </AnimatePresence>
     </>
   );

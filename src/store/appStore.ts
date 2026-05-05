@@ -26,14 +26,14 @@ interface AppStoreState {
 
   // Actions
   setAuth: (auth: AuthState | null) => void;
-  setProjects: (projects: Project[]) => void;
-  setPlans: (plans: Plan[]) => void;
-  setClients: (clients: Client[]) => void;
-  setInstDefs: (instDefs: InstDef[]) => void;
-  setPayments: (payments: Payment[]) => void;
-  setExpenses: (expenses: Expense[]) => void;
-  setAdmins: (admins: Admin[]) => void;
-  setLogs: (logs: Log[]) => void;
+  setProjects: (projects: Project[] | ((prev: Project[]) => Project[])) => void;
+  setPlans: (plans: Plan[] | ((prev: Plan[]) => Plan[])) => void;
+  setClients: (clients: Client[] | ((prev: Client[]) => Client[])) => void;
+  setInstDefs: (instDefs: InstDef[] | ((prev: InstDef[]) => InstDef[])) => void;
+  setPayments: (payments: Payment[] | ((prev: Payment[]) => Payment[])) => void;
+  setExpenses: (expenses: Expense[] | ((prev: Expense[]) => Expense[])) => void;
+  setAdmins: (admins: Admin[] | ((prev: Admin[]) => Admin[])) => void;
+  setLogs: (logs: Log[] | ((prev: Log[]) => Log[])) => void;
   setDrawer: (drawer: boolean) => void;
   setSelProject: (selProject: string | null) => void;
   setForceChangePw: (forceChangePw: boolean) => void;
@@ -81,20 +81,22 @@ export const useAppStore = create<AppStoreState>((set) => ({
     else localStorage.removeItem("marq_auth");
     set({ auth });
   },
-  setProjects: (projects) => set({ projects }),
-  setPlans: (plans) => set({ plans }),
-  setClients: (clients) => set({ clients }),
-  setInstDefs: (instDefs) => set({ instDefs }),
-  setPayments: (payments) => set({ payments }),
-  setExpenses: (expenses) => set({ expenses }),
-  setAdmins: (admins) => set({ admins }),
-  setLogs: (logs) => set({ logs }),
+  setProjects: (projects) => set((state) => ({ projects: typeof projects === 'function' ? projects(state.projects) : projects })),
+  setPlans: (plans) => set((state) => ({ plans: typeof plans === 'function' ? plans(state.plans) : plans })),
+  setClients: (clients) => set((state) => ({ clients: typeof clients === 'function' ? clients(state.clients) : clients })),
+  setInstDefs: (instDefs) => set((state) => ({ instDefs: typeof instDefs === 'function' ? instDefs(state.instDefs) : instDefs })),
+  setPayments: (payments) => set((state) => ({ payments: typeof payments === 'function' ? payments(state.payments) : payments })),
+  setExpenses: (expenses) => set((state) => ({ expenses: typeof expenses === 'function' ? expenses(state.expenses) : expenses })),
+  setAdmins: (admins) => set((state) => ({ admins: typeof admins === 'function' ? admins(state.admins) : admins })),
+  setLogs: (logs) => set((state) => ({ logs: typeof logs === 'function' ? logs(state.logs) : logs })),
   setDrawer: (drawer) => set({ drawer }),
   setSelProject: (selProject) => set({ selProject }),
   setForceChangePw: (forceChangePw) => set({ forceChangePw }),
   setLoading: (loading) => set({ loading }),
-  setDataLoaded: (updater) => set((state) => ({
-    dataLoaded: typeof updater === 'function' ? updater(state.dataLoaded) : { ...state.dataLoaded, ...updater }
-  })),
+  setDataLoaded: (updater) => set((state) => {
+    const next = typeof updater === 'function' ? updater(state.dataLoaded) : { ...state.dataLoaded, ...updater };
+    if (JSON.stringify(next) === JSON.stringify(state.dataLoaded)) return state;
+    return { dataLoaded: next };
+  }),
   setToast: (toast) => set({ toast }),
 }));

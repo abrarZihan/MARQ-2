@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Client, Payment } from "../types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,15 +31,15 @@ export const BDTshort = (n: number | string, isBn: boolean = false) => {
   };
 
   if (v >= 10000000) {
-    const val = (v / 10000000).toFixed(1);
+    const val = Number((v / 10000000).toFixed(2)).toString();
     return "৳" + toBn(val) + (isBn ? " কোটি" : "Cr");
   }
   if (v >= 100000) {
-    const val = (v / 100000).toFixed(v % 100000 === 0 ? 0 : 1);
+    const val = Number((v / 100000).toFixed(2)).toString();
     return "৳" + toBn(val) + (isBn ? " লাখ" : "L");
   }
   if (v >= 1000) {
-    const val = (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1);
+    const val = Number((v / 1000).toFixed(2)).toString();
     return "৳" + toBn(val) + (isBn ? " কে" : "K");
   }
   return "৳" + toBn(String(v));
@@ -55,13 +56,13 @@ export const fmtTs = (ts: string) => {
   );
 };
 
-export const genClientId = (existing: any[]) => {
+export const genClientId = (existing: Client[]) => {
   const nums = existing.map(c => parseInt((c.id || "").replace(/\D/g, ""), 10)).filter(n => !isNaN(n));
   const next = nums.length ? Math.max(...nums) + 1 : 1;
   return "C" + String(next).padStart(3, "0");
 };
 
-export const clientPaidForDef = (cId: string, dId: string, pays: any[]) => 
+export const clientPaidForDef = (cId: string, dId: string, pays: Payment[]) => 
   pays.filter(p => p.clientId === cId && p.instDefId === dId && p.status === "approved").reduce((s, p) => s + p.amount, 0);
 
 export const cellStatus = (paid: number, target: number) => paid === 0 ? "unpaid" : paid >= target ? "paid" : "partial";
@@ -89,7 +90,7 @@ export const numberToWords = (num: number): string => {
 };
 
 export const sanitize = (obj: any, fields: string[]) => {
-  const res: any = {};
+  const res: Record<string, any> = {};
   fields.forEach(f => { if (obj[f] !== undefined) res[f] = obj[f]; });
   return res;
 };

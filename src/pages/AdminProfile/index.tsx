@@ -6,12 +6,13 @@ import { ac, initials, cn, uid, tsNow } from "../../lib/utils";
 import { FG } from "../../components/Shared";
 import { useAppStore } from "../../store/appStore";
 import { Admin } from "../../types";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
-import { db, OperationType, handleFirestoreError } from "../../firebase";
+
+import { useActions } from "../../hooks/useActions";
 
 export default function AdminProfile() {
   const { t } = useLanguage();
-  const { auth, setAuth, setToast } = useAppStore();
+  const { auth } = useAppStore();
+  const actions = useActions();
   
   const admin = auth?.role !== "client" ? (auth?.user as Admin) : null;
   
@@ -34,32 +35,11 @@ export default function AdminProfile() {
     if (!nw || nw.length < 4) return setMsg({ t: "e", v: t('common.error_min_chars', { count: 4 }) });
     if (nw !== conf) return setMsg({ t: "e", v: t('common.error_pw_mismatch') });
 
-    try {
-      await updateDoc(doc(db, "admins", admin.id), { password: nw, isTemp: false });
-      const updatedUser = { ...admin, password: nw, isTemp: false };
-      setAuth({ ...auth!, user: updatedUser });
-      
-      // Inline Log creation
-      const logId = uid("LOG");
-      await setDoc(doc(db, "logs", logId), {
-        id: logId,
-        adminId: admin.id,
-        adminName: admin.name,
-        action: "pw_change",
-        target: admin.name,
-        detail: "পাসওয়ার্ড পরিবর্তন",
-        projectId: null,
-        ts: tsNow()
-      });
-
-      // Inline Toast notification
-      setToast({ m: t("common.success_saved"), t: "s" });
-      setTimeout(() => setToast(null), 3000);
-      
+    const success = await actions.changeAdminPassword(admin.id, nw);
+    if (success) {
       setOld(""); setNw(""); setConf("");
       setMsg({ t: "s", v: t('common.success_pw_changed') });
-    } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `admins/${admin.id}`);
+    } else {
       setMsg({ t: "e", v: "Error updating password" });
     }
   };

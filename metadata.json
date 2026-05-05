@@ -1,5 +1,5 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Marq Property Management",
+  "description": "A comprehensive real estate project management system for tracking installments, payments, and expenses with integrated payment processing and audit logging.",
   "requestFramePermissions": []
 }

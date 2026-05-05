@@ -1,0 +1,25 @@
+# Build output
+/dap
+
+# Go test binaries and coverage
+*.test
+coverage.out
+
+# Test artifacts
+testdata/go/__debug_bin*
+testdata/rust/*.out
+
+# python
+.venv
+.pytest_cache
+__pycache__
+
+
+# IDE
+.idea/
+.serena/
+
+# OS
+.DS_Store
+Thumbs.db
+.worktrees/

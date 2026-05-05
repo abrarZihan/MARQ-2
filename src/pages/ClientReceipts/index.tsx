@@ -6,20 +6,22 @@ import { FileText, ChevronRight, Clock } from "lucide-react";
 import { useLanguage } from "../../lib/i18n";
 import { useAppStore } from "../../store/appStore";
 
+import { Payment, Client, InstDef, Project } from "../../types";
+
 export default function ClientReceipts() {
   const { t, lang } = useLanguage();
   const { auth, instDefs, payments, projects, clients } = useAppStore();
-  const client = clients.find(c => c.id === auth?.user.id);
+  const client = clients.find(c => c.id === auth?.user.id) as Client;
   
-  const [viewR, setViewR] = useState<any>(null);
+  const [viewR, setViewR] = useState<Payment | null>(null);
 
   if (!client) return null;
 
-  const myPays = [...payments.filter((p: any) => p.clientId === client.id && p.status === "approved")].sort((a, b) => b.date.localeCompare(a.date));
-  const pendingPays = payments.filter((p: any) => p.clientId === client.id && p.status === "pending");
-  const project = projects.find((p: any) => p.id === client.projectId);
+  const myPays = [...payments.filter((p: Payment) => p.clientId === client.id && p.status === "approved")].sort((a, b) => b.date.localeCompare(a.date));
+  const pendingPays = payments.filter((p: Payment) => p.clientId === client.id && p.status === "pending");
+  const project = projects.find((p: Project) => p.id === client.projectId);
 
-  const hasMultiple = (client.planAssignments || []).length > 1 || (client.planAssignments || []).some((pa: any) => (pa.shareCount || 1) > 1);
+  const hasMultiple = (client.planAssignments || []).length > 1 || (client.planAssignments || []).some(pa => (pa.shareCount || 1) > 1);
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
@@ -42,8 +44,8 @@ export default function ClientReceipts() {
         </div>
       ) : (
         <div className="space-y-3">
-          {myPays.map((p: any, i: number) => {
-            const def = instDefs.find((d: any) => d.id === p.instDefId);
+          {myPays.map((p: Payment, i: number) => {
+            const def = instDefs.find((d: InstDef) => d.id === p.instDefId);
             return (
               <motion.div 
                 whileHover={{ scale: 0.98, y: -2 }} whileTap={{ scale: 0.95 }}
@@ -61,11 +63,6 @@ export default function ClientReceipts() {
                       <div className="text-[10px] text-app-text-muted font-mono font-bold tracking-widest uppercase mb-0.5">{p.id ? (p.id.split('-')[1] || p.id) : ""}</div>
                       <div className="text-base font-black text-app-text-primary leading-tight">
                         {def?.title || t('common.installment')}
-                        {def?.isGlobal && hasMultiple && (
-                          <div className="text-[9px] font-bold text-blue-500 uppercase tracking-tight mt-0.5">
-                            {t('common.global_payment_note')}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -93,7 +90,7 @@ export default function ClientReceipts() {
       )}
 
       <AnimatePresence mode="wait">
-        {viewR && <ReceiptSheet payment={viewR} instDef={instDefs.find((d: any) => d.id === viewR.instDefId)} client={client} project={project} hideOfficeCopy={true} onClose={() => setViewR(null)} />}
+        {viewR && <ReceiptSheet payment={viewR} instDef={instDefs.find((d: InstDef) => d.id === viewR.instDefId)} client={client} project={project} isSuperAdmin={false} onClose={() => setViewR(null)} />}
       </AnimatePresence>
     </motion.div>
   );

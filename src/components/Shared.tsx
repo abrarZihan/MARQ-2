@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Trash2, Home, ClipboardList, User, Shield, Receipt, Building2, LogOut, KeyRound, Droplets, Zap, Users, Package, Truck, FileText, Globe } from "lucide-react";
 import { cn, BDT, ac, initials } from "../lib/utils";
-import { STATUS, STATUS_LABEL, LOGO_URL } from "../lib/data";
+import { STATUS, LOGO_URL } from "../lib/data";
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from "../lib/i18n";
+import { Client, Plan, AuthUser } from "../types";
 
 export const CategoryIcon = ({ category, className, size = 24 }: { category: string, className?: string, size?: number }) => {
   switch (category) {
@@ -41,7 +42,7 @@ export function Badge({ status }: { status: string }) {
   );
 }
 
-export function PBar({ paid, target }: { paid: number; target: number }) {
+export function PBar({ paid, target, rightLabel }: { paid: number; target: number; rightLabel?: React.ReactNode }) {
   const { t, lang } = useLanguage();
   const pct = target > 0 ? Math.min(100, Math.round((paid / target) * 100)) : 0;
   const st = paid === 0 ? "unpaid" : paid >= target ? "paid" : "partial";
@@ -59,15 +60,18 @@ export function PBar({ paid, target }: { paid: number; target: number }) {
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className={cn("h-full rounded-full", m.bar)} 
+          layout
         />
       </div>
-      <div className="text-[11px] text-app-text-secondary mt-1 font-medium">{pct}% {t("common.paid_pct")}</div>
+      <div className="flex justify-between items-center mt-1 text-[10px] font-bold uppercase tracking-wider">
+        <div className="text-app-text-secondary">{pct}% {t("common.paid_pct")}</div>
+        {rightLabel && <div className="text-app-text-muted">{rightLabel}</div>}
+      </div>
     </div>
   );
 }
 
 export function FG({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
-  const { t, lang } = useLanguage();
   return (
     <div className={cn("mb-4", className)}>
       <label className="block text-xs font-bold text-app-text-secondary mb-1.5">{label}</label>
@@ -76,30 +80,34 @@ export function FG({ label, children, className }: { label: string; children: Re
   );
 }
 
-export function ClientAvatar({ client, size = 34 }: { client: any; size?: number }) {
+export function ClientAvatar({ client, size = 34 }: { client: Client | AuthUser | null; size?: number }) {
   const [err, setErr] = React.useState(false);
   if (!client) return <div style={{ width: size, height: size }} className="rounded-full bg-app-border shrink-0" />;
   
-  if (client.photo && !err) {
+  const photo = (client as any).photo;
+  const name = client.name || "";
+  const id = client.id || "0";
+
+  if (photo && !err) {
     return (
       <img 
-        src={client.photo} 
+        src={photo} 
         alt="" 
         style={{ width: size, height: size }} 
-        className="rounded-full object-cover block shrink-0" 
+        className="rounded-full object-cover block shrink-0 border border-app-border" 
         referrerPolicy="no-referrer"
         onError={() => setErr(true)}
       />
     );
   }
   
-  const color = ac(client.id);
+  const color = ac(id);
   return (
     <div 
       style={{ width: size, height: size, backgroundColor: color + "20", color, fontSize: size * 0.35 }} 
       className="rounded-full flex items-center justify-center font-extrabold shrink-0 border border-current/10"
     >
-      {initials(client.name)}
+      {initials(name)}
     </div>
   );
 }
@@ -143,8 +151,7 @@ export function ConfirmDelete({ message, onConfirm, onClose }: { message: React.
   );
 }
 
-export function ConfirmDeletePlan({ plan, amount, onConfirm, onClose }: { plan: any; amount: number; onConfirm: () => void; onClose: () => void }) {
-  const { t, lang } = useLanguage();
+export function ConfirmDeletePlan({ plan, amount, onConfirm, onClose }: { plan: Plan; amount: number; onConfirm: () => void; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 z-[600] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={onClose}>
       <motion.div 
@@ -170,7 +177,15 @@ export function ConfirmDeletePlan({ plan, amount, onConfirm, onClose }: { plan: 
   );
 }
 
-export function Drawer({ role, user, onLogout, open, onClose, isSuperAdmin, pendingCount }: any) {
+export function Drawer({ role, user, onLogout, open, onClose, isSuperAdmin, pendingCount }: {
+  role: AuthUser["role"];
+  user: AuthUser | null;
+  onLogout: () => void;
+  open: boolean;
+  onClose: () => void;
+  isSuperAdmin: boolean;
+  pendingCount: number;
+}) {
   const { t, lang, setLang } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -277,7 +292,7 @@ export function Drawer({ role, user, onLogout, open, onClose, isSuperAdmin, pend
   );
 }
 
-export function BottomBar({ role }: any) {
+export function BottomBar({ role }: { role: AuthUser["role"] }) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -298,11 +313,11 @@ export function BottomBar({ role }: any) {
         return (
           <button 
             key={t.id} 
-            className="flex-1 flex flex-col items-center justify-center py-2 gap-1 relative"
+            className="flex-1 flex flex-col items-center justify-center py-2 gap-1 relative text-app-nav-text-muted hover:text-app-nav-text transition-colors"
             onClick={() => navigate(t.path)}
           >
-            <Icon size={20} className={isActive ? "text-app-nav-text" : "text-app-nav-text-muted"} />
-            <span className={cn("text-[10px] font-bold", isActive ? "text-app-nav-text" : "text-app-nav-text-muted")}>{t.label}</span>
+            <Icon size={20} className={isActive ? "text-app-nav-text font-black" : ""} />
+            <span className={cn("text-[10px] font-bold", isActive ? "text-app-nav-text font-black" : "")}>{t.label}</span>
             {isActive && <motion.div layoutId="bottom-dot" className="w-1 h-1 rounded-full bg-app-nav-text absolute bottom-1" />}
           </button>
         );

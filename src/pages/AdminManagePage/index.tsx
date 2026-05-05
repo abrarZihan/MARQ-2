@@ -10,91 +10,33 @@ import { doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const ADMIN_FIELDS = ['id', 'name', 'username', 'password', 'role', 'isTemp'];
 
-const sanitize = (data: any, allowedFields: string[]) => {
-  const clean: any = {};
+const sanitize = (data: Record<string, unknown>, allowedFields: string[]) => {
+  const clean: Record<string, unknown> = {};
   allowedFields.forEach(f => {
     if (data[f] !== undefined) clean[f] = data[f];
   });
   return clean;
 };
 
+import { useActions } from "../../hooks/useActions";
+
+import { Admin } from "../../types";
+
 export default function AdminManagePage() {
   const { t } = useLanguage();
   const { admins, auth, setToast } = useAppStore();
+  const actions = useActions();
   
   const [addModal, setAddModal] = useState(false);
-  const [resetTarget, setReset] = useState<any>(null);
-  const [delTarget, setDel] = useState<any>(null);
+  const [resetTarget, setReset] = useState<Admin | null>(null);
+  const [delTarget, setDel] = useState<Admin | null>(null);
   const [tempPw, setTempPw] = useState("");
   const [newF, setNewF] = useState({ name: "", username: "", password: "" });
 
   const currentAdminId = auth?.user?.id;
   const isSuperAdmin = auth?.role === "superadmin";
-  const adminUser = auth?.user;
-
-  const showToast = (m: string, t: 's' | 'e' = 's') => {
-    setToast({ m, t });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const addLog = async (action: string, target: any, detail: any) => {
-    if (!adminUser) return;
-    const sTarget = typeof target === 'object' ? JSON.stringify(target) : String(target || "");
-    const sDetail = typeof detail === 'object' ? JSON.stringify(detail) : String(detail || "");
-    const newLog = { 
-      id: uid("LOG"), 
-      adminId: adminUser.id, 
-      adminName: adminUser.name, 
-      action, 
-      target: sTarget, 
-      detail: sDetail, 
-      projectId: null, 
-      ts: tsNow() 
-    };
-    try {
-      await setDoc(doc(db, "logs", newLog.id), newLog);
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `logs/${newLog.id}`);
-    }
-  };
-
-  const onAdd = async (a: any) => {
-    try {
-      const clean = sanitize(a, ADMIN_FIELDS);
-      await setDoc(doc(db, "admins", clean.id), clean);
-      addLog("admin_add", clean.name, clean.role);
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `admins/${a.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onDelete = async (id: string) => {
-    const a = admins.find(x => x.id === id);
-    try {
-      await deleteDoc(doc(db, "admins", id));
-      if (a) addLog("admin_remove", a.name, a.role);
-      showToast(t("common.success_deleted"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `admins/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onResetPw = async (id: string, newPw: string) => {
-    try {
-      await updateDoc(doc(db, "admins", id), { password: newPw, isTemp: true });
-      const a = admins.find(x => x.id === id);
-      if (a) addLog("admin_reset_pw", a.name, "Temporary password সেট");
-      showToast(t("common.success_saved"));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `admins/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
   
-  const s = (k: string, v: string) => setNewF(p => ({ ...p, [k]: v }));
+  const s = (k: keyof typeof newF, v: string) => setNewF(p => ({ ...p, [k]: v }));
 
   if (!isSuperAdmin) return null;
 
@@ -115,7 +57,7 @@ export default function AdminManagePage() {
       </div>
 
       <div className="space-y-3">
-        {admins.map((adm: any) => {
+        {admins.map((adm: Admin) => {
           const isSelf = adm.id === currentAdminId;
           const isSuper = adm.role === "superadmin";
           const color = isSuper ? "#f59e0b" : ac(adm.id);
@@ -197,7 +139,7 @@ export default function AdminManagePage() {
                   className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-xl hover:opacity-90 transition-colors" 
                   onClick={() => {
                     if (!newF.name || !newF.username || !newF.password) { alert(t('common.error_fill_all')); return; }
-                    onAdd({ id: uid("adm-"), name: newF.name, username: newF.username, password: newF.password, role: "admin", isTemp: true });
+                    actions.addAdmin({ id: uid("adm-"), name: newF.name, username: newF.username, password: newF.password, role: "admin", isTemp: true });
                     setAddModal(false); setNewF({ name: "", username: "", password: "" });
                   }}
                 >
@@ -231,7 +173,7 @@ export default function AdminManagePage() {
                   className="flex-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold py-3.5 rounded-xl hover:bg-orange-500/20 transition-colors border border-orange-500/20" 
                   onClick={() => {
                     if (!tempPw) { alert(t('common.error_enter_pw')); return; }
-                    onResetPw(resetTarget.id, tempPw);
+                    actions.resetAdminPw(resetTarget.id, tempPw);
                     setReset(null);
                   }}
                 >
@@ -248,11 +190,50 @@ export default function AdminManagePage() {
         {delTarget && (
           <ConfirmDelete 
             message={<div>{delTarget.name} (@{delTarget.username}) কে মুছে ফেলবেন?</div>} 
-            onConfirm={() => { onDelete(delTarget.id); setDel(null); }} 
+            onConfirm={() => { actions.removeAdmin(delTarget.id); setDel(null); }} 
             onClose={() => setDel(null)} 
           />
         )}
       </AnimatePresence>
+
+      <div className="mt-12 pt-8 border-t border-app-border">
+        <h2 className="text-sm font-black text-app-text-muted uppercase tracking-widest mb-4">Database Maintenance</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-app-surface border border-app-border p-5 rounded-2xl shadow-sm">
+            <h3 className="text-sm font-bold text-app-text-primary mb-1">Migrate Payment Data</h3>
+            <p className="text-[11px] text-app-text-secondary leading-relaxed mb-4">
+              Add missing project relationships to old payments. Required for project-level pagination.
+            </p>
+            <button 
+              onClick={() => {
+                if (confirm("This will scan all payments and associate them with their correct Projects. Proceed?")) {
+                  actions.migratePayments();
+                }
+              }}
+              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-black hover:bg-blue-500/20 border border-blue-500/20 transition-all inline-flex items-center gap-2"
+            >
+              Run Migration
+            </button>
+          </div>
+
+          <div className="bg-app-surface border border-app-border p-5 rounded-2xl shadow-sm">
+            <h3 className="text-sm font-bold text-app-text-primary mb-1">Clear Audit Logs</h3>
+            <p className="text-[11px] text-app-text-secondary leading-relaxed mb-4">
+              Delete all historical audit logs to save local/cloud storage space. This action is permanent.
+            </p>
+            <button 
+              onClick={() => {
+                if (confirm("Are you sure you want to PERMANENTLY delete ALL audit logs?")) {
+                  actions.clearLogs();
+                }
+              }}
+              className="bg-rose-500/10 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-xl text-xs font-black hover:bg-rose-500/20 border border-rose-500/20 transition-all inline-flex items-center gap-2"
+            >
+              Clear Logs
+            </button>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }

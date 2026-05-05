@@ -8,81 +8,31 @@ import { useLanguage } from "../../../lib/i18n";
 import { useAppStore } from "../../../store/appStore";
 import { db, handleFirestoreError, OperationType } from "../../../firebase";
 import { doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { Expense } from "../../../types";
 
 const EXPENSE_FIELDS = ['id', 'projectId', 'category', 'amount', 'date', 'description'];
 
-const sanitize = (data: any, allowedFields: string[]) => {
-  const clean: any = {};
+const sanitize = (data: Record<string, any>, allowedFields: string[]) => {
+  const clean: Record<string, any> = {};
   allowedFields.forEach(f => {
     if (data[f] !== undefined) clean[f] = data[f];
   });
   return clean;
 };
 
+import { useActions } from "../../../hooks/useActions";
+
 export default function ExpensesTab({ projectId }: { projectId: string }) {
   const { t } = useLanguage();
   const { expenses, auth, setToast } = useAppStore();
+  const actions = useActions();
   
-  const adminUser = auth?.user;
-  const prjExpenses = expenses.filter((e: any) => e.projectId === projectId);
-  const totalExpense = prjExpenses.reduce((s: number, e: any) => s + e.amount, 0);
+  const prjExpenses = expenses.filter((e: Expense) => e.projectId === projectId);
+  const totalExpense = prjExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
 
   const [addExpModal, setAddExpModal] = useState(false);
-  const [editExpModal, setEditExpModal] = useState<any>(null);
-  const [delExp, setDelExp] = useState<any>(null);
-
-  const showToast = (m: string, t: 's' | 'e' = 's') => {
-    setToast({ m, t });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const addLog = async (action: string, target: any, detail: any) => {
-    if (!adminUser) return;
-    const sTarget = typeof target === 'object' ? JSON.stringify(target) : String(target || "");
-    const sDetail = typeof detail === 'object' ? JSON.stringify(detail) : String(detail || "");
-    const newLog = { id: uid("LOG"), adminId: adminUser.id, adminName: adminUser.name, action, target: sTarget, detail: sDetail, projectId, ts: tsNow() };
-    try {
-      await setDoc(doc(db, "logs", newLog.id), newLog);
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `logs/${newLog.id}`);
-    }
-  };
-
-  const onAddExpense = async (e: any) => {
-    try {
-      const clean = sanitize(e, EXPENSE_FIELDS);
-      await setDoc(doc(db, "expenses", clean.id), clean);
-      addLog("expense_add", clean.category, `${BDT(clean.amount)} — ${clean.description}`);
-      showToast(t("common.success_saved"));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `expenses/${e.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onUpdateExpense = async (e: any) => {
-    try {
-      const clean = sanitize(e, EXPENSE_FIELDS);
-      await updateDoc(doc(db, "expenses", clean.id), clean);
-      addLog("expense_edit", clean.category, `${BDT(clean.amount)} — ${clean.description}`);
-      showToast(t("common.success_saved"));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `expenses/${e.id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
-
-  const onDeleteExpense = async (id: string) => {
-    const e = expenses.find(x => x.id === id);
-    try {
-      await deleteDoc(doc(db, "expenses", id));
-      if (e) addLog("expense_delete", e.category, `${BDT(e.amount)} — ${e.description}`);
-      showToast(t("common.success_deleted"));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `expenses/${id}`);
-      showToast(t("common.error_occurred"), 'e');
-    }
-  };
+  const [editExpModal, setEditExpModal] = useState<Expense | null>(null);
+  const [delExp, setDelExp] = useState<Expense | null>(null);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -112,7 +62,7 @@ export default function ExpensesTab({ projectId }: { projectId: string }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {[...prjExpenses].sort((a, b) => b.date.localeCompare(a.date)).map((e: any, i: number) => (
+          {[...prjExpenses].sort((a: Expense, b: Expense) => b.date.localeCompare(a.date)).map((e: Expense, i: number) => (
             <div key={`${e.id}-${i}`} className="bg-app-surface rounded-2xl border border-app-border p-4 shadow-sm flex items-center gap-4">
               <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border", CategoryColor(e.category))}>
                 <CategoryIcon category={e.category} size={24} />
@@ -145,9 +95,9 @@ export default function ExpensesTab({ projectId }: { projectId: string }) {
       )}
 
       <AnimatePresence>
-        {addExpModal && <AddExpSheet projectId={projectId} onSave={(e: any) => { onAddExpense(e); setAddExpModal(false); }} onClose={() => setAddExpModal(false)} />}
-        {editExpModal && <AddExpSheet projectId={projectId} expense={editExpModal} onSave={(e: any) => { onUpdateExpense(e); setEditExpModal(null); }} onClose={() => setEditExpModal(null)} />}
-        {delExp && <ConfirmDelete message={<><b>{delExp.category}</b> — {BDT(delExp.amount)}{t("project_detail.will_be_deleted")}</>} onConfirm={() => { onDeleteExpense(delExp.id); setDelExp(null); }} onClose={() => setDelExp(null)} />}
+        {addExpModal && <AddExpSheet projectId={projectId} onSave={(e: Expense) => { actions.addExpense(e); setAddExpModal(false); }} onClose={() => setAddExpModal(false)} />}
+        {editExpModal && <AddExpSheet projectId={projectId} expense={editExpModal} onSave={(e: Expense) => { actions.updateExpense(e); setEditExpModal(null); }} onClose={() => setEditExpModal(null)} />}
+        {delExp && <ConfirmDelete message={<><b>{delExp.category}</b> — {BDT(delExp.amount)}{t("project_detail.will_be_deleted")}</>} onConfirm={() => { actions.deleteExpense(delExp.id); setDelExp(null); }} onClose={() => setDelExp(null)} />}
       </AnimatePresence>
     </div>
   );

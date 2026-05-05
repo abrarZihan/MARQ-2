@@ -50,13 +50,25 @@ export default function ProjectDetail() {
         ))}
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-        {tab === "sheet" && <SheetTab projectId={projectId!} />}
-        {tab === "clientinfo" && <ClientsTab projectId={projectId!} />}
-        {tab === "payments" && <PaymentsTab projectId={projectId!} />}
-        {tab === "kistisum" && <SummaryTab projectId={projectId!} />}
-        {tab === "expenses" && <ExpensesTab projectId={projectId!} />}
-        {tab === "log" && <LogTab projectId={projectId!} />}
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 relative">
+        <div className={cn(tab === "sheet" ? "block" : "hidden")}>
+          <SheetTab projectId={projectId!} />
+        </div>
+        <div className={cn(tab === "clientinfo" ? "block" : "hidden")}>
+          <ClientsTab projectId={projectId!} />
+        </div>
+        <div className={cn(tab === "payments" ? "block" : "hidden")}>
+          <PaymentsTab projectId={projectId!} />
+        </div>
+        <div className={cn(tab === "kistisum" ? "block" : "hidden")}>
+          <SummaryTab projectId={projectId!} />
+        </div>
+        <div className={cn(tab === "expenses" ? "block" : "hidden")}>
+          <ExpensesTab projectId={projectId!} />
+        </div>
+        <div className={cn(tab === "log" ? "block" : "hidden")}>
+          <LogTab projectId={projectId!} />
+        </div>
       </div>
     </motion.div>
   );

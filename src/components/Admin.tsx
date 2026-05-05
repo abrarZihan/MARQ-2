@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { BDT, BDTshort, dotJoin, ac, initials, fmtTs, uid, todayStr, clientPaidForDef, cellStatus, cn } from "../lib/utils";
 import { ACTION_META, EXP_CATS, STATUS, STATUS_LABEL } from "../lib/data";
 import { Badge, PBar, FG, ClientAvatar, PassCell, ConfirmDelete } from "./Shared";
@@ -7,11 +7,13 @@ import { Building2, CheckCircle2, Clock, Trash2, Edit2, UserPlus, FileText, Pick
 
 import { useLanguage } from "../lib/i18n";
 
-export function LogRow({ log, projects }: any) {
+import { Log, Project } from "../types";
+
+export const LogRow: React.FC<{ log: Log; projects: Project[] }> = ({ log, projects }) => {
   const { t } = useLanguage();
-  const m = ACTION_META[log.action] || { icon: "FileText", color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-500/10" };
+  const m = ACTION_META[log.action as string] || { icon: "FileText", color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-500/10" };
   const label = t('common.actions.' + log.action) || log.action;
-  const prj = projects?.find((p: any) => p.id === log.projectId);
+  const prj = projects?.find((p: Project) => p.id === log.projectId);
   
   // Map string icons to Lucide components
   const IconComponent = m.icon === "CircleDollarSign" ? <CircleDollarSign size={20} className="text-emerald-600 dark:text-emerald-400" /> : 
@@ -53,86 +55,3 @@ export function LogRow({ log, projects }: any) {
     </div>
   );
 }
-
-export function AuditLogPage({ logs, projects, isSuperAdmin, onClearLogs }: any) {
-  const { t } = useLanguage();
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-  
-  const filtered = [...logs].sort((a, b) => b.ts.localeCompare(a.ts)).filter(l => {
-    const matchFilter = filter === "all" || l.action.startsWith(filter);
-    const q = search.toLowerCase();
-    const matchSearch = !q || l.adminName.toLowerCase().includes(q) || l.target.toLowerCase().includes(q) || (l.detail || "").toLowerCase().includes(q);
-    return matchFilter && matchSearch;
-  });
-  
-  const cats = [
-    ["all", t('common.all')], ["payment", <span className="flex items-center gap-1"><CircleDollarSign size={12} /> {t('common.payment')}</span>], 
-    ["client", <span className="flex items-center gap-1"><Users size={12} /> {t('common.client')}</span>], 
-    ["expense", <span className="flex items-center gap-1"><Pickaxe size={12} /> {t('common.expenses')}</span>], 
-    ["admin", <span className="flex items-center gap-1"><Shield size={12} /> {t('common.admin')}</span>], 
-    ["project", <span className="flex items-center gap-1"><Building size={12} /> {t('common.project')}</span>]
-  ];
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-xl font-black text-app-text-primary">{t('common.activity_log')}</h1>
-          <p className="text-xs font-medium text-app-text-secondary">{t('common.records_count', { count: filtered.length })}</p>
-        </div>
-        {isSuperAdmin && logs.length > 0 && (
-          <button 
-            onClick={() => setShowClearConfirm(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold hover:bg-rose-500/20 transition-colors border border-rose-500/20"
-          >
-            <Trash2 size={14} />
-            {t('common.clear_logs')}
-          </button>
-        )}
-      </div>
-      
-      <input 
-        className="w-full px-4 py-3 bg-app-surface border border-app-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-app-text-muted transition-all mb-3 text-app-text-primary" 
-        placeholder={t('common.search_logs_placeholder')} 
-        value={search} onChange={e => setSearch(e.target.value)} 
-      />
-      
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-        {cats.map(([v, l]) => (
-          <button 
-            key={v} 
-            onClick={() => setFilter(v)} 
-            className={cn(
-              "px-4 py-1.5 rounded-full border-2 text-xs font-bold whitespace-nowrap transition-colors",
-              filter === v ? "bg-app-tab-active border-app-tab-active text-app-bg" : "bg-app-surface border-app-border text-app-text-secondary hover:border-app-text-muted"
-            )}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
-      
-      <div className="bg-app-surface rounded-2xl border border-app-border p-2">
-        {filtered.length === 0 ? (
-          <div className="text-center py-10 text-app-text-muted font-medium">{t('common.no_records')}</div>
-        ) : (
-          filtered.map((l, i) => <LogRow key={`${l.id}-${i}`} log={l} projects={projects} />)
-        )}
-      </div>
-
-      {showClearConfirm && (
-        <ConfirmDelete 
-          message={t('common.clear_logs_confirm')} 
-          onConfirm={() => { onClearLogs(); setShowClearConfirm(false); }} 
-          onClose={() => setShowClearConfirm(false)} 
-        />
-      )}
-    </motion.div>
-  );
-}
-
-// Helper for Tailwind classes
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";

@@ -8,63 +8,56 @@ import { Clock, Loader2, AlertCircle, ChevronRight } from "lucide-react";
 import { useLanguage } from "../../lib/i18n";
 import { useAppStore } from "../../store/appStore";
 
+import { Project, Plan, Client, InstDef, Payment, Expense } from "../../types";
+
 export default function ClientInstallments() {
   const { t, lang } = useLanguage();
   const { auth, instDefs, payments, projects, plans, clients } = useAppStore();
-  const client = clients.find(c => c.id === auth?.user.id);
+  const client = clients.find(c => c.id === auth?.user.id) as Client;
 
   const [activePlanId, setActivePlanId] = useState<string>("all");
   const [viewModes, setViewModes] = useState<Record<string, "combined" | "shares">>({});
   const [payingId, setPayingId] = useState<string | null>(null);
   const [activePaymentId, setActivePaymentId] = useState<string | null>(null);
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [paymentResult, setPaymentResult] = useState<any>(null);
+  const [paymentResult, setPaymentResult] = useState<Payment | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [distMode, setDistMode] = useState<"equal" | "waterfall">("equal");
 
   if (!client) return null;
 
-  const clientPlans = (client.planAssignments || []).map((pa: any) => plans.find((p: any) => p.id === pa.planId)).filter(Boolean);
-  const hasMultiple = clientPlans.length > 1 || (client.planAssignments || []).some((pa: any) => (pa.shareCount || 1) > 1);
+  const clientPlans = (client.planAssignments || []).map(pa => plans.find((p: Plan) => p.id === pa.planId)).filter(Boolean) as Plan[];
+  const hasMultiple = clientPlans.length > 1 || (client.planAssignments || []).some(pa => (pa.shareCount || 1) > 1);
   
-  const activePlan = activePlanId === "all" ? null : plans.find((p: any) => p.id === activePlanId);
+  const activePlan = activePlanId === "all" ? null : plans.find((p: Plan) => p.id === activePlanId);
   const prjDefs = activePlanId === "all"
     ? (() => {
-        const defs: any[] = [];
-        const globalSeen = new Set();
-        
-        // Add global installments once
-        instDefs.filter((d: any) => d.projectId === client.projectId && d.isGlobal).forEach((d: any) => {
-          if (!globalSeen.has(d.id)) {
-            defs.push({ ...d, _shareCount: 1 });
-            globalSeen.add(d.id);
-          }
-        });
+        const defs: (InstDef & { _shareCount: number })[] = [];
         
         // Add plan-specific installments
-        (client.planAssignments || []).forEach((pa: any) => {
-          instDefs.filter((d: any) => d.planId === pa.planId && !d.isGlobal).forEach((d: any) => {
+        (client.planAssignments || []).forEach(pa => {
+          instDefs.filter((d: InstDef) => d.planId === pa.planId).forEach((d: InstDef) => {
             defs.push({ ...d, _shareCount: pa.shareCount || 1 });
           });
         });
         
         return defs;
       })()
-    : instDefs.filter((d: any) => d.planId === activePlanId || (d.projectId === client.projectId && d.isGlobal))
+    : instDefs.filter((d: InstDef) => d.planId === activePlanId)
         .map(d => {
-          const pa = client.planAssignments?.find((p: any) => p.planId === activePlanId);
-          return { ...d, _shareCount: d.isGlobal ? 1 : (pa?.shareCount || 1) };
+          const pa = client.planAssignments?.find(p => p.planId === activePlanId);
+          return { ...d, _shareCount: (pa?.shareCount || 1) };
         });
 
-  const totalPaid = payments.filter((p: any) => p.clientId === client.id && prjDefs.find((d: any) => d.id === p.instDefId) && p.status === "approved").reduce((s: number, p: any) => s + p.amount, 0);
-  const totalTarget = prjDefs.reduce((s: number, d: any) => s + d.targetAmount * (d._shareCount || 1), 0);
+  const totalPaid = payments.filter((p: Payment) => p.clientId === client.id && prjDefs.find((d: InstDef) => d.id === p.instDefId) && p.status === "approved").reduce((s: number, p: Payment) => s + p.amount, 0);
+  const totalTarget = prjDefs.reduce((s: number, d) => s + d.targetAmount * (d._shareCount || 1), 0);
   const currentShareCount = activePlanId === "all"
-    ? (client.planAssignments || []).reduce((acc: number, pa: any) => acc + (pa.shareCount || 1), 0)
-    : (client.planAssignments?.find((pa: any) => pa.planId === activePlanId)?.shareCount || client.shareCount || 1);
+    ? (client.planAssignments || []).reduce((acc: number, pa) => acc + (pa.shareCount || 1), 0)
+    : (client.planAssignments?.find(pa => pa.planId === activePlanId)?.shareCount || client.shareCount || 1);
 
   const shareSlots = useMemo(() => {
     if (activePlanId !== "all") {
-      const count = client.planAssignments?.find((pa: any) => pa.planId === activePlanId)?.shareCount || client.shareCount || 1;
+      const count = client.planAssignments?.find(pa => pa.planId === activePlanId)?.shareCount || client.shareCount || 1;
       return Array.from({ length: count }).map((_, i) => ({
         planId: activePlanId,
         shareIndex: i,
@@ -72,8 +65,8 @@ export default function ClientInstallments() {
       }));
     }
     
-    return (client.planAssignments || []).flatMap((pa: any) => {
-      const plan = plans.find((p: any) => p.id === pa.planId);
+    return (client.planAssignments || []).flatMap(pa => {
+      const plan = plans.find((p: Plan) => p.id === pa.planId);
       const planName = plan?.name || "";
       return Array.from({ length: pa.shareCount || 1 }).map((_, i) => ({
         planId: pa.planId,
@@ -91,30 +84,30 @@ export default function ClientInstallments() {
   };
 
   const showViewToggle = activePlanId === "all"
-    ? (client.planAssignments || []).some((pa: any) => (pa.shareCount || 1) > 1)
-    : (client.planAssignments?.find((pa: any) => pa.planId === activePlanId)?.shareCount || 1) > 1;
+    ? (client.planAssignments || []).some(pa => (pa.shareCount || 1) > 1)
+    : (client.planAssignments?.find(pa => pa.planId === activePlanId)?.shareCount || 1) > 1;
 
   const groupedDefs = useMemo(() => {
     if (activePlanId !== "all") return [{ id: activePlanId, name: activePlan?.name || "", defs: prjDefs }];
     
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, (InstDef & { _shareCount: number })[]> = {};
     prjDefs.forEach(d => {
-      const key = d.isGlobal ? 'global' : (d.planId || 'other');
+      const key = d.planId || 'other';
       if (!groups[key]) groups[key] = [];
       groups[key].push(d);
     });
     
     return Object.entries(groups).map(([id, defs]) => {
-      const plan = plans.find((p: any) => p.id === id);
+      const plan = plans.find((p: Plan) => p.id === id);
       return {
         id,
-        name: id === 'global' ? (t('common.basic_payments') || "Basic Payments") : (plan?.name || ""),
+        name: plan?.name || "",
         defs
       };
     });
   }, [activePlanId, prjDefs, activePlan, plans, t]);
 
-  const isProcessingPayment = paymentResult && (!instDefs.find((d: any) => d.id === paymentResult.instDefId) || !projects.find((p: any) => p.id === activePlan?.projectId));
+  const isProcessingPayment = paymentResult && (!instDefs.find((d: InstDef) => d.id === paymentResult.instDefId) || !projects.find((p: Project) => p.id === activePlan?.projectId));
 
   useEffect(() => {
     if (!activePlanId && clientPlans.length > 0) {
@@ -158,7 +151,7 @@ export default function ClientInstallments() {
     );
   }
 
-  const handlePayment = async (d: any, amount: number) => {
+  const handlePayment = async (d: InstDef, amount: number) => {
     setPayingId(d.id);
     try {
       const response = await fetch('/api/initiate-payment', {
@@ -210,8 +203,8 @@ export default function ClientInstallments() {
             <div className="text-2xl font-black text-app-text-primary truncate leading-tight">{client.name}</div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
               <div className="flex flex-wrap gap-1.5">
-                {(client.planAssignments || []).map((pa: any, i: number) => {
-                  const plan = plans.find((p: any) => p.id === pa.planId);
+                {(client.planAssignments || []).map((pa) => {
+                  const plan = plans.find((p: Plan) => p.id === pa.planId);
                   return (
                     <span key={pa.planId} className="inline-flex items-center px-2 py-0.5 rounded-md bg-app-bg border border-app-border text-[10px] font-black text-app-text-secondary uppercase tracking-tight">
                       {plan?.name} ({pa.shareCount || 1} {t('client_info.shares')})
@@ -236,7 +229,7 @@ export default function ClientInstallments() {
           >
             {t('common.all_plans') || "All Plans"}
           </button>
-          {clientPlans.map((pl: any) => (
+          {clientPlans.map((pl: Plan) => (
             <button 
               key={pl.id} 
               className={cn(
@@ -371,9 +364,9 @@ export default function ClientInstallments() {
 
                     {/* Installments Container (Scrollable only for All Plans with multiple plans) */}
                     <div className={cn("flex-1 p-2 space-y-3", showBox ? "max-h-[480px] overflow-y-auto custom-scrollbar" : "")}>
-                      {group.defs.map((d: any) => {
+                      {group.defs.map((d) => {
                         const paid = clientPaidForDef(client.id, d.id, payments);
-                        const pendingAmt = payments.filter((p: any) => p.clientId === client.id && p.instDefId === d.id && p.status === "pending").reduce((s: number, p: any) => s + p.amount, 0);
+                        const pendingAmt = payments.filter((p: Payment) => p.clientId === client.id && p.instDefId === d.id && p.status === "pending").reduce((s: number, p: Payment) => s + p.amount, 0);
                         const target = d.targetAmount * (d._shareCount || 1);
                         const st = cellStatus(paid, target);
                         const isDue = d.dueDate && d.dueDate < today && paid < target;
@@ -386,11 +379,6 @@ export default function ClientInstallments() {
                               <div>
                                 <div className="text-base font-black text-app-text-primary">
                                   {d.title}
-                                  {d.isGlobal && hasMultiple && (
-                                    <span className="ml-2 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800">
-                                      {t('common.global_payment_note')}
-                                    </span>
-                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="text-xs text-app-text-secondary font-medium">{t('common.due')}: {d.dueDate || "—"}</span>
@@ -472,20 +460,18 @@ export default function ClientInstallments() {
         ) : (
           <div className="space-y-8">
             {shareSlots.map((slot, j) => (
-              <div key={j} className="space-y-3">
+              <div key={`${slot.planId}-${slot.shareIndex}`} className="space-y-3">
                 <div className="flex items-center gap-2 px-2">
                   <div className="w-6 h-6 bg-app-tab-active text-app-bg rounded-lg flex items-center justify-center text-[10px] font-black">{j + 1}</div>
                   <div className="text-xs font-black text-app-text-primary uppercase tracking-widest">{slot.label}</div>
                 </div>
                 <div className="space-y-2">
-                  {prjDefs.filter((d: any) => d.isGlobal || (d.planId === slot.planId && (d._shareCount || 1) >= slot.shareIndex + 1)).map((d: any) => {
+                  {prjDefs.filter((d) => d.planId === slot.planId && (d._shareCount || 1) >= slot.shareIndex + 1).map((d) => {
                     const totalPaidForDef = clientPaidForDef(client.id, d.id, payments);
                     const sCount = d._shareCount || 1;
-                    const sharePaid = d.isGlobal 
-                      ? Math.min(d.targetAmount, totalPaidForDef)
-                      : (distMode === "waterfall" 
+                    const sharePaid = distMode === "waterfall" 
                           ? Math.min(d.targetAmount, Math.max(0, totalPaidForDef - slot.shareIndex * d.targetAmount))
-                          : Math.min(d.targetAmount, totalPaidForDef / sCount));
+                          : Math.min(d.targetAmount, totalPaidForDef / sCount);
                     const st = cellStatus(sharePaid, d.targetAmount);
                     const m = STATUS[st];
                     const isDue = d.dueDate && d.dueDate < today && sharePaid < d.targetAmount;
@@ -497,11 +483,6 @@ export default function ClientInstallments() {
                           <div>
                             <div className="text-base font-black text-app-text-primary">
                               {d.title}
-                              {d.isGlobal && hasMultiple && (
-                                <span className="ml-2 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800">
-                                  {t('common.global_payment_note')}
-                                </span>
-                              )}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs text-app-text-secondary font-medium">{t('common.due')}: {d.dueDate || "—"}</span>
@@ -592,10 +573,10 @@ export default function ClientInstallments() {
         {paymentResult && (
           <ReceiptSheet 
             payment={paymentResult} 
-            instDef={instDefs.find((d: any) => d.id === paymentResult.instDefId)} 
+            instDef={instDefs.find((d: InstDef) => d.id === paymentResult.instDefId) as InstDef} 
             client={client} 
-            project={projects.find((p: any) => p.id === client.projectId)} 
-            hideOfficeCopy={true} 
+            project={projects.find((p: Project) => p.id === client.projectId) as Project} 
+            isSuperAdmin={false}
             onClose={() => setPaymentResult(null)} 
           />
         )}

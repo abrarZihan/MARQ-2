@@ -5,25 +5,35 @@ import { FG, ConfirmDelete, PBar } from "./Shared";
 import { EXP_CATS, LOGO_URL } from "../lib/data";
 import { Trash2, Clock, Printer, FileText } from "lucide-react";
 import { useLanguage } from "../lib/i18n";
+import { Client, InstDef, Payment, Project, Expense } from "../types";
 
-export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin, onSave, onDelete, onClose }: any) {
+export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin, onSave, onDelete, onClose }: {
+  client: Client;
+  instDef: InstDef;
+  payments: Payment[];
+  project: Project;
+  isSuperAdmin: boolean;
+  onSave: (p: Payment) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+}) {
   const { t, lang } = useLanguage();
-  const assignment = client.planAssignments?.find((pa: any) => pa.planId === instDef.planId);
-  const shareCount = instDef.isGlobal ? 1 : (assignment ? assignment.shareCount : (client.shareCount || 1));
+  const assignment = client.planAssignments?.find(pa => pa.planId === instDef.planId);
+  const shareCount = assignment ? (assignment.shareCount || 1) : (client.shareCount || 1);
   const targetAmount = instDef.targetAmount * shareCount;
-  const existPays = payments.filter((p: any) => p.clientId === client.id && p.instDefId === instDef.id);
-  const approvedPays = existPays.filter((p: any) => p.status === "approved");
-  const pendingPays = existPays.filter((p: any) => p.status === "pending");
-  const paid = approvedPays.reduce((s: number, p: any) => s + p.amount, 0);
-  const pending = pendingPays.reduce((s: number, p: any) => s + p.amount, 0);
+  const existPays = payments.filter(p => p.clientId === client.id && p.instDefId === instDef.id);
+  const approvedPays = existPays.filter(p => p.status === "approved");
+  const pendingPays = existPays.filter(p => p.status === "pending");
+  const paid = approvedPays.reduce((s: number, p: Payment) => s + p.amount, 0);
+  const pending = pendingPays.reduce((s: number, p: Payment) => s + p.amount, 0);
   const rem = Math.max(0, targetAmount - (paid + pending));
   
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayStr());
   const [note, setNote] = useState("");
   const [err, setErr] = useState("");
-  const [delPay, setDelPay] = useState<any>(null);
-  const [viewR, setViewR] = useState<any>(null);
+  const [delPay, setDelPay] = useState<Payment | null>(null);
+  const [viewR, setViewR] = useState<Payment | null>(null);
 
   const submit = () => {
     const a = parseFloat(amount);
@@ -33,7 +43,7 @@ export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin,
     onClose();
   };
 
-  const hasMultiple = (client.planAssignments || []).length > 1 || (client.planAssignments || []).some((pa: any) => (pa.shareCount || 1) > 1);
+  const hasMultiple = (client.planAssignments || []).length > 1 || (client.planAssignments || []).some(pa => (pa.shareCount || 1) > 1);
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 z-[400] flex items-end sm:items-center justify-center backdrop-blur-sm transition-colors" onClick={onClose}>
@@ -48,11 +58,6 @@ export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin,
         <div className="text-xs font-bold text-app-text-secondary mt-1 mb-6">
           {dotJoin(client.name, client.plot, instDef.title)} 
           {shareCount > 1 && <span className="text-blue-600 dark:text-blue-400 ml-1">({shareCount} {t("client_info.shares")})</span>}
-          {instDef.isGlobal && hasMultiple && (
-            <div className="mt-1 text-[10px] font-bold text-blue-500 uppercase tracking-tight">
-              {t('common.global_payment_note')}
-            </div>
-          )}
         </div>
         
         <div className="bg-app-bg border border-app-border rounded-2xl p-4 mb-6 transition-colors">
@@ -63,7 +68,7 @@ export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin,
         {approvedPays.length > 0 && (
           <div className="mb-4">
             <div className="text-[10px] text-app-text-muted font-bold uppercase tracking-wider mb-2">{t("project_modals.approved")}</div>
-            {approvedPays.map((p: any) => (
+            {approvedPays.map((p: Payment) => (
               <div key={p.id} className="flex justify-between items-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mb-2 transition-colors">
                 <span className="text-xs font-medium text-app-text-secondary">{dotJoin(p.date, p.note)}</span>
                 <div className="flex items-center gap-2">
@@ -81,7 +86,7 @@ export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin,
         {pendingPays.length > 0 && (
           <div className="mb-6">
             <div className="text-[10px] text-app-text-muted font-bold uppercase tracking-wider mb-2">{t("project_modals.pending_approval")}</div>
-            {pendingPays.map((p: any) => (
+            {pendingPays.map((p: Payment) => (
               <div key={p.id} className="flex justify-between items-center bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-2 transition-colors">
                 <span className="text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1.5"><Clock size={12} /> {dotJoin(p.date, p.note)}</span>
                 <div className="flex items-center gap-3">
@@ -158,10 +163,15 @@ export function CellPaySheet({ client, instDef, payments, project, isSuperAdmin,
   );
 }
 
-export function AddDefSheet({ projectId, planId, onSave, onClose }: any) {
+export function AddDefSheet({ projectId, planId, onSave, onClose }: {
+  projectId: string;
+  planId: string;
+  onSave: (d: InstDef) => void;
+  onClose: () => void;
+}) {
   const { t, lang } = useLanguage();
-  const [f, setF] = useState({ title: "", dueDate: "", targetAmount: "", isGlobal: false });
-  const s = (k: string, v: any) => setF(p => ({ ...p, [k]: v }));
+  const [f, setF] = useState({ title: "", dueDate: "", targetAmount: "" });
+  const s = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
   
   return (
     <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 z-[400] flex items-end sm:items-center justify-center backdrop-blur-sm" onClick={onClose}>
@@ -181,26 +191,13 @@ export function AddDefSheet({ projectId, planId, onSave, onClose }: any) {
           <FG label={t("project_modals.target_bdt")}><input className="w-full px-4 py-3 bg-app-bg border border-app-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-app-text-muted transition-all font-bold text-app-text-primary" type="number" value={f.targetAmount} onChange={e => s("targetAmount", e.target.value)} /></FG>
           <FG label={t("project_modals.due_date")}><input className="w-full px-4 py-3 bg-app-bg border border-app-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-app-text-muted transition-all font-bold text-app-text-primary" type="date" value={f.dueDate} onChange={e => s("dueDate", e.target.value)} /></FG>
         </div>
-
-        <div className="flex items-center gap-3 mb-6 p-3 bg-app-bg border border-app-border rounded-xl">
-          <input 
-            type="checkbox" id="isGlobal" className="w-5 h-5 rounded-lg border-app-border text-app-tab-active focus:ring-app-tab-active" 
-            checked={f.isGlobal} onChange={e => s("isGlobal", e.target.checked)} 
-          />
-          <label htmlFor="isGlobal" className="text-sm font-bold text-app-text-primary cursor-pointer select-none">
-            {lang === 'bn' ? "সবার জন্য এক (সব প্ল্যান ও শেয়ারে সমান)" : "Same for all (across plans and shares)"}
-            <div className="text-[10px] text-app-text-muted font-medium mt-0.5">
-              {lang === 'bn' ? "এটি সব প্ল্যানে একই থাকবে এবং শেয়ার সংখ্যা দিয়ে গুণ হবে না।" : "Shows same amount in all plans and doesn't multiply by share count."}
-            </div>
-          </label>
-        </div>
         
         <div className="flex gap-3 mt-4">
           <button 
             className="flex-1 bg-app-tab-active text-app-bg font-bold py-3.5 rounded-xl hover:opacity-90 transition-colors" 
             onClick={() => {
               if (!f.title || !f.targetAmount) { alert(t("project_modals.add_inst_err")); return; }
-              onSave({ id: uid("D-"), projectId, planId, title: f.title, dueDate: f.dueDate, targetAmount: parseFloat(f.targetAmount), isGlobal: f.isGlobal });
+              onSave({ id: uid("D-"), projectId, planId, title: f.title, dueDate: f.dueDate, targetAmount: parseFloat(f.targetAmount) });
               onClose();
             }}
           >
@@ -213,10 +210,15 @@ export function AddDefSheet({ projectId, planId, onSave, onClose }: any) {
   );
 }
 
-export function EditDefSheet({ def, onSave, onDelete, onClose }: any) {
+export function EditDefSheet({ def, onSave, onDelete, onClose }: {
+  def: InstDef;
+  onSave: (d: InstDef) => void;
+  onDelete: (id: string, planId: string) => void;
+  onClose: () => void;
+}) {
   const { t, lang } = useLanguage();
   const [f, setF] = useState({ ...def, targetAmount: def.targetAmount.toString() });
-  const s = (k: string, v: any) => setF(p => ({ ...p, [k]: v }));
+  const s = (k: string, v: string | boolean) => setF(p => ({ ...p, [k]: v }));
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
@@ -238,16 +240,6 @@ export function EditDefSheet({ def, onSave, onDelete, onClose }: any) {
           <FG label={t("project_modals.due_date")}><input className="w-full px-4 py-3 bg-app-bg border border-app-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-app-text-muted transition-all font-bold text-app-text-primary" type="date" value={f.dueDate} onChange={e => s("dueDate", e.target.value)} /></FG>
         </div>
 
-        <div className="flex items-center gap-3 mb-6 p-3 bg-app-bg border border-app-border rounded-xl">
-          <input 
-            type="checkbox" id="isGlobalEdit" className="w-5 h-5 rounded-lg border-app-border text-app-tab-active focus:ring-app-tab-active" 
-            checked={f.isGlobal} onChange={e => s("isGlobal", e.target.checked)} 
-          />
-          <label htmlFor="isGlobalEdit" className="text-sm font-bold text-app-text-primary cursor-pointer select-none">
-            {lang === 'bn' ? "সবার জন্য এক (সব প্ল্যান ও শেয়ারে সমান)" : "Same for all (across plans and shares)"}
-          </label>
-        </div>
-        
         <div className="flex flex-col gap-3 mt-4">
           <div className="flex gap-3">
             <button 
@@ -273,7 +265,7 @@ export function EditDefSheet({ def, onSave, onDelete, onClose }: any) {
         {showConfirm && (
           <ConfirmDelete 
             message={lang === 'bn' ? "এই কিস্তি কলামটি মুছে ফেলবেন? এর সব পেমেন্ট রেকর্ডও মুছে যাবে।" : "Delete this installment column? All associated payment records will also be deleted."}
-            onConfirm={() => { onDelete(def.id); onClose(); }}
+            onConfirm={() => { onDelete(def.id, def.planId); onClose(); }}
             onClose={() => setShowConfirm(false)}
           />
         )}
@@ -282,9 +274,14 @@ export function EditDefSheet({ def, onSave, onDelete, onClose }: any) {
   );
 }
 
-export function AddExpSheet({ projectId, expense, onSave, onClose }: any) {
+export function AddExpSheet({ projectId, expense, onSave, onClose }: {
+  projectId: string;
+  expense?: Expense | null;
+  onSave: (e: Expense) => void;
+  onClose: () => void;
+}) {
   const { t, lang } = useLanguage();
-  const [f, setF] = useState(expense ? { ...expense } : { category: "", description: "", amount: expense?.amount?.toString() || "", date: todayStr() });
+  const [f, setF] = useState(expense ? { ...expense, amount: expense.amount.toString() } : { category: "", description: "", amount: "", date: todayStr() });
   const s = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
   
   return (
@@ -328,125 +325,121 @@ export function AddExpSheet({ projectId, expense, onSave, onClose }: any) {
   );
 }
 
-export function ReceiptSheet({ payment, instDef, client, project, hideOfficeCopy, isSuperAdmin, onDelete, onClose }: any) {
+export function ReceiptSheet({ payment, instDef, client, project, isSuperAdmin, onDelete, onClose }: {
+  payment: Payment;
+  instDef?: InstDef;
+  client?: Client;
+  project?: Project;
+  isSuperAdmin: boolean;
+  onDelete?: (id: string) => void;
+  onClose: () => void;
+}) {
   const { t, lang } = useLanguage();
   const [showConfirm, setShowConfirm] = useState(false);
   
   const ReceiptContent = ({ type }: { type: string }) => (
-    <div className="receipt-paper relative p-10 font-sans border-b border-dashed last:border-0 print:border-b-0 print:h-[50vh] flex flex-col min-w-[850px] print:min-w-0 overflow-hidden">
+    <div className="receipt-paper relative p-8 font-sans flex flex-col overflow-hidden bg-white text-slate-900 transition-colors">
       {/* Header */}
-      {/* Logo in top-left corner */}
-      <div className="absolute top-6 left-10">
-        <img 
-          src={LOGO_URL} 
-          alt="Logo" 
-          className="h-20 w-auto object-contain"
-          referrerPolicy="no-referrer"
-        />
-      </div>
-
-      <div className="flex flex-col items-center mb-6 w-full">
-        <h1 className="text-3xl font-black text-[#0f172a] tracking-tight">MARQ BUILDERS</h1>
-        <p className="text-[11px] font-bold text-slate-800 mt-2 text-center w-full">
-          216/8, Baganbari, North Vasantek Dhaka Cantt, Dhaka- 1206
-        </p>
-      </div>
-
-      {/* Copy Badge */}
-      <div className="absolute top-8 right-8">
-        <span className="bg-[#5c5fc8] text-white text-[10px] font-bold px-4 py-1 rounded-md shadow-sm">
-          {type} Copy
-        </span>
-      </div>
-
-      {/* Sl No & Date */}
-      <div className="flex justify-between text-[13px] font-bold mb-6 px-2">
-        <div className="flex items-baseline gap-1">
-          <span>Sl. No.</span>
-          <span className="receipt-border-bottom min-w-[120px] px-2 text-center">
-            {payment?.id ? (payment.id.split('-')[1] || payment.id) : ""}
-          </span>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex gap-4 items-center">
+          <img 
+            src={LOGO_URL} 
+            alt="Logo" 
+            className="h-14 w-auto object-contain"
+            referrerPolicy="no-referrer"
+          />
+          <div>
+            <h1 className="text-xl font-black tracking-tight leading-none uppercase">MARQ BUILDERS</h1>
+            <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase">
+              216/8, Baganbari, North Vasantek Dhaka Cantt, Dhaka- 1206
+            </p>
+          </div>
         </div>
-        <div className="flex items-baseline gap-1">
-          <span>Date:</span>
-          <span className="receipt-border-bottom min-w-[180px] px-2 text-center">
-            {payment.date}
+        <div className="flex flex-col items-end gap-1">
+          <span className="bg-[#5c5fc8] text-white text-[9px] font-bold px-3 py-1 rounded shadow-sm uppercase tracking-wider">
+            {type} Copy
           </span>
+          <div className="text-[11px] font-bold text-slate-700 flex gap-2">
+            <span>Date:</span>
+            <span className="border-b border-slate-300 min-w-[100px] text-center">{payment.date}</span>
+          </div>
         </div>
       </div>
 
       {/* Title */}
-      <div className="text-center mb-8">
-        <span className="bg-[#5c5fc8] text-white px-12 py-2 rounded-lg font-bold text-sm uppercase tracking-wider shadow-sm">
+      <div className="text-center mb-4">
+        <span className="bg-[#5c5fc8] text-white px-10 py-1.5 rounded font-black text-xs uppercase tracking-[0.2em] shadow-sm">
           Money Receipt
         </span>
       </div>
 
+      {/* Sl No */}
+      <div className="flex justify-between text-[11px] font-bold mb-4 uppercase">
+        <div className="flex items-baseline gap-1">
+          <span className="text-slate-500">Sl. No.</span>
+          <span className="border-b border-slate-300 min-w-[80px] px-2 text-center text-slate-900">
+            {payment?.id ? (payment.id.split('-')[1] || payment.id) : ""}
+          </span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-slate-500">Customer ID:</span>
+          <span className="border-b border-slate-300 min-w-[80px] px-2 text-center text-slate-900">{client?.id}</span>
+        </div>
+      </div>
+
       {/* Fields */}
-      <div className="space-y-5 text-[13px] px-2">
-        <div className="flex gap-8">
+      <div className="space-y-4 text-[12px] flex-1">
+        <div className="flex gap-6">
           <div className="flex-1 flex items-baseline gap-2">
-            <span className="whitespace-nowrap font-bold">Name:</span>
-            <span className="flex-1 receipt-border-bottom px-2 font-bold">{client?.name}</span>
-          </div>
-          <div className="w-[280px] flex items-baseline gap-2">
-            <span className="whitespace-nowrap font-bold">Customer ID:</span>
-            <span className="flex-1 receipt-border-bottom px-2 font-bold">{client?.id}</span>
+            <span className="whitespace-nowrap font-bold text-slate-500 uppercase text-[10px]">Name:</span>
+            <span className="flex-1 border-b border-slate-200 px-2 font-black text-slate-900">{client?.name}</span>
           </div>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           <div className="flex-1 flex items-baseline gap-2">
-            <span className="whitespace-nowrap font-bold">Project Name:</span>
-            <span className="flex-1 receipt-border-bottom px-2 font-bold">{project?.name || "N/A"}</span>
+            <span className="whitespace-nowrap font-bold text-slate-500 uppercase text-[10px]">Project:</span>
+            <span className="flex-1 border-b border-slate-200 px-2 font-bold text-slate-900">{project?.name || "N/A"}</span>
           </div>
-          <div className="w-[280px] flex items-baseline gap-2">
-            <span className="whitespace-nowrap font-bold">Instalment No.:</span>
-            <span className="flex-1 receipt-border-bottom px-2 font-bold">
-              {instDef?.title}
-              {instDef?.isGlobal && (
-                <span className="ml-2 text-[9px] font-bold text-blue-600 uppercase tracking-tight print:text-black">
-                  {t('common.global_payment_note')}
-                </span>
-              )}
-            </span>
+          <div className="w-[40%] flex items-baseline gap-2">
+            <span className="whitespace-nowrap font-bold text-slate-500 uppercase text-[10px]">Plot/Flat:</span>
+            <span className="flex-1 border-b border-slate-200 px-2 font-bold text-slate-900">{client?.plot}</span>
           </div>
         </div>
 
-        <div className="flex items-baseline gap-2">
-          <span className="whitespace-nowrap font-bold">Amount =</span>
-          <span className="flex-1 receipt-border-bottom px-2 font-black text-base">{payment.amount.toLocaleString()}/-</span>
+        <div className="flex gap-6">
+          <div className="flex-1 flex items-baseline gap-2">
+            <span className="whitespace-nowrap font-bold text-slate-500 uppercase text-[10px]">Instalment:</span>
+            <span className="flex-1 border-b border-slate-200 px-2 font-bold text-slate-900">{instDef?.title}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 py-2 px-3 bg-slate-50 rounded-lg border border-slate-100">
+          <span className="whitespace-nowrap font-black text-slate-500 uppercase text-[10px]">Amount:</span>
+          <span className="flex-1 font-black text-lg text-slate-900">৳ {payment.amount.toLocaleString()}/-</span>
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="whitespace-nowrap font-bold">Amount in word:</span>
-          <span className="flex-1 receipt-border-bottom px-2 font-bold">{numberToWords(payment.amount)} TK</span>
-        </div>
-
-        <div className="flex items-baseline gap-2">
-          <span className="whitespace-nowrap font-bold">Deposit By:</span>
-          <span className="flex-1 receipt-border-bottom px-2 font-bold">Cash/Cheque/Bank</span>
+          <span className="whitespace-nowrap font-bold text-slate-500 uppercase text-[10px]">In Words:</span>
+          <span className="flex-1 border-b border-slate-200 px-2 font-bold italic text-slate-700 capitalize">{numberToWords(payment.amount)} Taka Only</span>
         </div>
       </div>
 
       {/* Footer Signatures */}
-      <div className="flex justify-between mt-24 px-4 text-[11px] font-bold text-center">
-        <div className="w-48 receipt-border-top pt-1.5">Prepared By</div>
-        <div className="w-48 receipt-border-top pt-1.5">Accounts Officer</div>
-        <div className="w-48 receipt-border-top pt-1.5">Authorised Signature</div>
+      <div className="flex justify-between mt-12 px-2 text-[9px] font-bold text-center text-slate-600 uppercase">
+        <div className="w-32 border-t border-slate-400 pt-1">Client Signature</div>
+        <div className="w-32 border-t border-slate-400 pt-1">Accounts Officer</div>
+        <div className="w-32 border-t border-slate-400 pt-1">Authorized</div>
       </div>
 
-      {/* Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none -z-10">
-        <div className="flex flex-col items-center gap-4 rotate-[-15deg]">
-          <img 
-            src={LOGO_URL} 
-            alt="" 
-            className="w-[350px] h-auto object-contain grayscale" 
-            referrerPolicy="no-referrer"
-          />
-          <div className="text-[80px] font-black whitespace-nowrap">MARQ BUILDERS</div>
-        </div>
+      {/* Watermark Logo */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none -z-10">
+        <img 
+          src={LOGO_URL} 
+          alt="" 
+          className="w-[200px] h-auto object-contain grayscale" 
+          referrerPolicy="no-referrer"
+        />
       </div>
     </div>
   );
@@ -455,10 +448,10 @@ export function ReceiptSheet({ payment, instDef, client, project, hideOfficeCopy
     <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/60 z-[400] flex items-center justify-center backdrop-blur-sm p-4 overflow-y-auto" onClick={onClose}>
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-        className="rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden print:shadow-none print:rounded-none bg-app-surface border border-app-border" 
+        className="rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden print:shadow-none print:rounded-none bg-white border border-app-border transition-colors no-scrollbar" 
         onClick={e => e.stopPropagation()}
       >
-        <div className="max-h-[85vh] overflow-auto print:max-h-none print:overflow-visible relative">
+        <div className="receipt-print-container max-h-[85vh] overflow-auto print:max-h-none print:overflow-visible relative bg-white">
           {isSuperAdmin && onDelete && (
             <button 
               className="absolute top-4 right-4 z-50 w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition-colors no-print"
@@ -471,30 +464,26 @@ export function ReceiptSheet({ payment, instDef, client, project, hideOfficeCopy
 
           {showConfirm && (
             <ConfirmDelete 
-              message={t("project_modals.confirm_delete_receipt") || "Are you sure you want to delete this payment receipt? This will remove the payment record permanently."}
+              message={t("project_modals.confirm_delete_receipt") || "Are you sure you want to delete this payment receipt?"}
               onConfirm={() => { onDelete(payment.id); onClose(); }}
               onClose={() => setShowConfirm(false)}
             />
           )}
 
           <ReceiptContent type="Customer" />
-          {!hideOfficeCopy && (
-            <>
-              <div className="h-px border-b border-dashed border-slate-300 print:my-4" />
-              <ReceiptContent type="Office" />
-            </>
-          )}
+          <div className="print:hidden border-b-2 border-dashed border-slate-300 my-2" />
+          <ReceiptContent type="Office" />
         </div>
         
-        <div className="receipt-footer-bar p-6 flex gap-3 no-print">
+        <div className="receipt-footer-bar p-6 flex gap-3 no-print bg-slate-50 border-t border-slate-100">
           <button 
-            className="flex-1 text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2" 
-            style={{ backgroundColor: '#5c5fc8', color: 'white' }}
+            className="flex-3 text-white font-black py-4 rounded-xl hover:opacity-95 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-[0.98]" 
+            style={{ backgroundColor: '#5c5fc8' }}
             onClick={() => window.print()}
           >
-            <Printer size={18} /> {t("project_modals.print")}
+            <Printer size={20} /> {t("project_modals.print_receipt") || "Print Receipt"}
           </button>
-          <button className="flex-1 bg-app-bg text-app-text-secondary font-bold py-3.5 rounded-xl hover:bg-app-border transition-colors border border-app-border" onClick={onClose}>
+          <button className="flex-1 bg-white text-slate-600 font-bold py-4 rounded-xl hover:bg-slate-50 transition-colors border border-slate-200" onClick={onClose}>
             {t("project_modals.close")}
           </button>
         </div>
@@ -502,15 +491,69 @@ export function ReceiptSheet({ payment, instDef, client, project, hideOfficeCopy
 
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          .print\\:max-h-none, .print\\:max-h-none * { visibility: visible; }
-          .print\\:max-h-none {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
+          @page { 
+            margin: 0 !important;
+            size: portrait; 
           }
+          
+          /* Hide everything except the receipt container */
+          body * { visibility: hidden !important; }
+          .no-scrollbar { overflow: hidden !important; }
+          
+          .receipt-print-container, 
+          .receipt-print-container * { 
+            visibility: visible !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Force container to occupy exactly one screen height to prevent 2nd page spill */
+          .receipt-print-container {
+            position: absolute !important;
+            left: 0 !important; 
+            top: 0 !important;
+            width: 100% !important;
+            height: 100vh !important;
+            padding: 0.8cm !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            background: white !important;
+          }
+
+          /* Force Background Colors (for "Money Receipt" banner) */
+          .receipt-paper [class*="bg-[#5c5fc8]"] {
+            background-color: #5c5fc8 !important;
+            /* Use inset box-shadow for browsers that ignore background-color */
+            box-shadow: inset 0 0 0 1000px #5c5fc8 !important; 
+            color: white !important;
+          }
+
+          /* Partitioning */
+          .receipt-paper {
+            flex: 1 !important;
+            max-height: 47% !important;
+            page-break-inside: avoid !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            margin-bottom: 0px !important;
+            padding: 0.6cm !important;
+          }
+          
+          .receipt-paper:first-of-type {
+            border-bottom: 2px dashed #cbd5e1 !important;
+            margin-bottom: 1cm !important;
+          }
+
           .no-print { display: none !important; }
+        }
+        
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
