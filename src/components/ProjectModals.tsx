@@ -470,9 +470,12 @@ export function ReceiptSheet({ payment, instDef, client, project, isSuperAdmin, 
             />
           )}
 
-          <ReceiptContent type="Customer" />
-          <div className="print:hidden border-b-2 border-dashed border-slate-300 my-2" />
-          <ReceiptContent type="Office" />
+          <div className="receipt-print-wrapper flex flex-col h-full w-full">
+            <ReceiptContent type="Customer" />
+            <div className="print:hidden border-b-2 border-dashed border-slate-300 my-2" />
+            <div className="hidden print:block border-t-2 border-dashed border-slate-400 my-0 py-0 h-0" />
+            <ReceiptContent type="Office" />
+          </div>
         </div>
         
         <div className="receipt-footer-bar p-6 flex gap-3 no-print bg-slate-50 border-t border-slate-100">
@@ -521,10 +524,18 @@ export function ReceiptSheet({ payment, instDef, client, project, isSuperAdmin, 
             background: white !important;
           }
 
+          .receipt-print-wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100% !important;
+            width: 100% !important;
+            gap: 0.5cm !important;
+          }
+
           /* Force Background Colors (for "Money Receipt" banner) */
           .receipt-paper [class*="bg-[#5c5fc8]"] {
             background-color: #5c5fc8 !important;
-            /* Use inset box-shadow for browsers that ignore background-color */
+            -webkit-print-color-adjust: exact !important;
             box-shadow: inset 0 0 0 1000px #5c5fc8 !important; 
             color: white !important;
           }
@@ -537,13 +548,25 @@ export function ReceiptSheet({ payment, instDef, client, project, isSuperAdmin, 
             border: 1px solid #e2e8f0 !important;
             border-radius: 8px !important;
             margin-bottom: 0px !important;
-            padding: 0.6cm !important;
+            padding: 0.5cm !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
           
           .receipt-paper:first-of-type {
             border-bottom: 2px dashed #cbd5e1 !important;
-            margin-bottom: 1cm !important;
+            margin-bottom: 0.5cm !important;
           }
+
+          /* Dimension Scaling */
+          .receipt-paper h1 { font-size: 1.25rem !important; }
+          .receipt-paper .text-lg { font-size: 1.1rem !important; }
+          .receipt-paper .text-[12px] { font-size: 11px !important; }
+          .receipt-paper .text-[10px] { font-size: 9px !important; }
+          .receipt-paper .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.4rem !important; }
+          .receipt-paper .mt-12 { margin-top: 1.5rem !important; }
+          .receipt-paper .mb-4 { margin-bottom: 0.5rem !important; }
 
           .no-print { display: none !important; }
         }
